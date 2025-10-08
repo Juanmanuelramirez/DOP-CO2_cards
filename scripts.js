@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reemplaza los siguientes valores con tu nombre de usuario y el nombre
     // de tu repositorio donde se encuentran los archivos HTML.
     // =======================================================================
-    const GITHUB_USER = 'TU_USUARIO_DE_GITHUB';
-    const GITHUB_REPO = 'TU_NOMBRE_DE_REPOSITORIO';
+    const GITHUB_USER = 'juanmanuelramirez';
+    const GITHUB_REPO = 'DOP-CO2_cards';
 
 
     const menuContainer = document.getElementById('menu-container');
@@ -21,6 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function generateMenu(fileStructure) {
         menuContainer.innerHTML = ''; // Limpiamos el menú
+        // Ordena la estructura para que la carpeta Principal (raíz) aparezca primero.
+        fileStructure.sort((a, b) => {
+            if (a.folder === 'Principal') return -1;
+            if (b.folder === 'Principal') return 1;
+            return a.folder.localeCompare(b.folder);
+        });
+
         fileStructure.forEach(item => {
             const folderTitle = document.createElement('h3');
             folderTitle.className = 'text-lg font-semibold text-gray-500 mt-6 mb-2 uppercase tracking-wider';
@@ -72,58 +79,62 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Se conecta a la API de GitHub, construye la estructura de archivos
-     * y llama a la función para generar el menú.
+     * Se conecta a la API de GitHub y recorre RECURSIVAMENTE el repositorio
+     * para construir la estructura de archivos y generar el menú.
      */
     async function fetchAndBuildMenu() {
-        menuContainer.innerHTML = '<p class="text-gray-500">Cargando menú desde GitHub...</p>';
-        const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents`;
+        menuContainer.innerHTML = '<p class="text-gray-500">Buscando archivos en GitHub...</p>';
+        const apiBaseUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents`;
 
-        // Verifica si los datos del repositorio fueron ingresados.
         if (GITHUB_USER === 'TU_USUARIO_DE_GITHUB' || GITHUB_REPO === 'TU_NOMBRE_DE_REPOSITORIO') {
             menuContainer.innerHTML = '<p class="text-red-500 font-semibold">Error de Configuración</p><p class="text-xs text-red-700">Por favor, actualiza las constantes GITHUB_USER y GITHUB_REPO en el archivo <strong>scripts.js</strong>.</p>';
             return;
         }
 
         try {
-            // 1. Obtener el contenido de la raíz del repositorio.
-            const rootResponse = await fetch(apiUrl);
-            if (!rootResponse.ok) throw new Error(`No se pudo acceder al repositorio. Verifica que el usuario y el nombre del repo sean correctos.`);
-            const rootContents = await rootResponse.json();
+            const folderMap = new Map();
 
-            // 2. Filtrar para obtener solo las carpetas, ignorando las que empiezan con "." (como .github).
-            const folders = rootContents.filter(item => item.type === 'dir' && !item.name.startsWith('.'));
-            let dynamicFileStructure = [];
+            // Función recursiva para explorar las carpetas del repositorio
+            async function traverseRepo(path = '') {
+                const response = await fetch(`${apiBaseUrl}/${path}`);
+                if (!response.ok) return;
+                const contents = await response.json();
 
-            // 3. Para cada carpeta, obtener su contenido.
-            for (const folder of folders) {
-                const folderResponse = await fetch(folder.url);
-                if (!folderResponse.ok) continue; // Si falla una carpeta, la saltamos.
-                const folderContents = await folderResponse.json();
-
-                // 4. Filtrar solo los archivos que terminan en .html.
-                const htmlFiles = folderContents
-                    .filter(file => file.type === 'file' && file.name.endsWith('.html'))
-                    .map(file => ({
-                        name: file.name.replace('.html', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                        path: file.path
-                    }));
-                
-                // 5. Si la carpeta contiene archivos HTML, la añadimos a nuestra estructura.
-                if (htmlFiles.length > 0) {
-                    dynamicFileStructure.push({
-                        folder: folder.name.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                        files: htmlFiles
-                    });
+                for (const item of contents) {
+                    if (item.type === 'dir' && !item.name.startsWith('.')) {
+                        // Si es una carpeta, la exploramos recursivamente
+                        await traverseRepo(item.path);
+                    } else if (item.type === 'file' && item.name.endsWith('.html')) {
+                        // Si es un archivo HTML, lo procesamos
+                        const dirPath = item.path.substring(0, item.path.lastIndexOf('/') || 0);
+                        if (!folderMap.has(dirPath)) {
+                            folderMap.set(dirPath, []);
+                        }
+                        folderMap.get(dirPath).push({
+                            name: item.name.replace('.html', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                            path: item.path
+                        });
+                    }
                 }
             }
 
-            if (dynamicFileStructure.length === 0) {
-                menuContainer.innerHTML = '<p class="text-orange-500">No se encontraron carpetas con archivos .html en el repositorio.</p>';
+            await traverseRepo(); // Empezamos la búsqueda desde la raíz
+
+            if (folderMap.size === 0) {
+                menuContainer.innerHTML = '<p class="text-orange-500">No se encontraron archivos .html en el repositorio.</p>';
                 return;
             }
 
-            // 6. Generar el menú con la estructura obtenida de GitHub.
+            // Convertimos el mapa a la estructura que espera generateMenu
+            const dynamicFileStructure = Array.from(folderMap.entries()).map(([path, files]) => {
+                 let folderName = 'Principal'; // Nombre para archivos en la raíz
+                 if (path) {
+                     const pathParts = path.split('/');
+                     folderName = pathParts.pop().replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                 }
+                 return { folder: folderName, files };
+            });
+            
             generateMenu(dynamicFileStructure);
 
         } catch (error) {
@@ -150,3 +161,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Iniciar todo el proceso.
     fetchAndBuildMenu();
 });
+
