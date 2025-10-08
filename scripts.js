@@ -1,33 +1,54 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // =======================================================================
-    // ¡IMPORTANTE! - CONFIGURA AQUÍ TU REPOSITORIO DE GITHUB
+    // ¡LA SOLUCIÓN MÁS UNIVERSAL! - DEFINE AQUÍ LA ESTRUCTURA DE TU SITIO
     // =======================================================================
-    // Reemplaza los siguientes valores con tu nombre de usuario y el nombre
-    // de tu repositorio donde se encuentran los archivos HTML.
+    // Este método es el más confiable y funcionará en CUALQUIER LUGAR 
+    // (en tu PC, en GitHub, en cualquier hosting).
+    //
+    // Para que el menú se actualice automáticamente cuando añades archivos,
+    // solo tienes que añadir la nueva entrada en esta lista.
     // =======================================================================
-    const GITHUB_USER = 'Juanmanuelramirez';
-    const GITHUB_REPO = 'DOP-CO2_cards';
-
+    const fileStructure = [
+        {
+            folder: 'Introducción',
+            files: [
+                { name: 'Bienvenida', path: 'introduccion/bienvenida.html' },
+                { name: 'Acerca de', path: 'introduccion/acerca.html' }
+            ]
+        },
+        {
+            folder: 'Guías de Usuario',
+            files: [
+                { name: 'Guía de Inicio', path: 'guias/inicio.html' },
+                { name: 'Guía Avanzada', path: 'guias/avanzada.html' }
+            ]
+        },
+        {
+            folder: 'Contacto',
+            files: [
+                { name: 'Formulario', path: 'contacto/formulario.html' }
+            ]
+        }
+    ];
 
     const menuContainer = document.getElementById('menu-container');
     const mainContent = document.getElementById('main-content');
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('toggle-btn');
 
-    /**
-     * Genera el menú HTML en la barra lateral a partir de una estructura de archivos.
-     * @param {Array} fileStructure - La estructura de carpetas y archivos del sitio.
-     */
-    function generateMenu(fileStructure) {
-        menuContainer.innerHTML = ''; // Limpiamos el menú
-        // Ordena la estructura para que la carpeta Principal (raíz) aparezca primero.
-        fileStructure.sort((a, b) => {
-            if (a.folder === 'Principal') return -1;
-            if (b.folder === 'Principal') return 1;
-            return a.folder.localeCompare(b.folder);
-        });
+    // --- El resto del código es 100% dinámico y no necesita cambios ---
 
+    /**
+     * Genera el menú HTML en la barra lateral a partir de la estructura definida.
+     */
+    function generateMenu() {
+        if (fileStructure.length === 0) {
+            menuContainer.innerHTML = '<p class="text-gray-500">No hay elementos en el menú. Define la estructura en <code>scripts.js</code>.</p>';
+            return;
+        }
+
+        menuContainer.innerHTML = ''; // Limpiamos el menú
         fileStructure.forEach(item => {
             const folderTitle = document.createElement('h3');
             folderTitle.className = 'text-lg font-semibold text-gray-500 mt-6 mb-2 uppercase tracking-wider';
@@ -52,10 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     /**
      * Carga el contenido de un archivo HTML en el área principal.
-     * @param {string} path - La ruta al archivo HTML.
      */
     function loadContent(path) {
-         // Si tu sitio está en GitHub Pages, la ruta relativa funcionará directamente.
          fetch(path)
             .then(response => {
                 if (!response.ok) {
@@ -72,83 +91,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-6 rounded-lg shadow-md" role="alert">
                         <h2 class="font-bold text-xl mb-2">Error al Cargar Contenido</h2>
                         <p>${error.message}</p>
-                        <p class="mt-2 text-sm">Asegúrate de que la ruta sea correcta y el archivo exista en el repositorio.</p>
+                        <p class="mt-2 text-sm">Asegúrate de que la ruta en 'fileStructure' sea correcta y el archivo exista.</p>
                     </div>
                 `;
             });
     }
-
-    /**
-     * Se conecta a la API de GitHub y recorre RECURSIVAMENTE el repositorio
-     * para construir la estructura de archivos y generar el menú.
-     */
-    async function fetchAndBuildMenu() {
-        menuContainer.innerHTML = '<p class="text-gray-500">Buscando archivos en GitHub...</p>';
-        const apiBaseUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents`;
-
-        if (GITHUB_USER === 'TU_USUARIO_DE_GITHUB' || GITHUB_REPO === 'TU_NOMBRE_DE_REPOSITORIO') {
-            menuContainer.innerHTML = '<p class="text-red-500 font-semibold">Error de Configuración</p><p class="text-xs text-red-700">Por favor, actualiza las constantes GITHUB_USER y GITHUB_REPO en el archivo <strong>scripts.js</strong>.</p>';
-            return;
-        }
-
-        try {
-            const folderMap = new Map();
-
-            // Función recursiva para explorar las carpetas del repositorio
-            async function traverseRepo(path = '') {
-                const response = await fetch(`${apiBaseUrl}/${path}`);
-                if (!response.ok) return;
-                const contents = await response.json();
-
-                for (const item of contents) {
-                    if (item.type === 'dir' && !item.name.startsWith('.')) {
-                        // Si es una carpeta, la exploramos recursivamente
-                        await traverseRepo(item.path);
-                    } else if (item.type === 'file' && item.name.endsWith('.html')) {
-                        // Si es un archivo HTML, lo procesamos
-                        const dirPath = item.path.substring(0, item.path.lastIndexOf('/') || 0);
-                        if (!folderMap.has(dirPath)) {
-                            folderMap.set(dirPath, []);
-                        }
-                        folderMap.get(dirPath).push({
-                            name: item.name.replace('.html', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                            path: item.path
-                        });
-                    }
-                }
-            }
-
-            await traverseRepo(); // Empezamos la búsqueda desde la raíz
-
-            if (folderMap.size === 0) {
-                menuContainer.innerHTML = '<p class="text-orange-500">No se encontraron archivos .html en el repositorio.</p>';
-                return;
-            }
-
-            // Convertimos el mapa a la estructura que espera generateMenu
-            const dynamicFileStructure = Array.from(folderMap.entries()).map(([path, files]) => {
-                 let folderName = 'Principal'; // Nombre para archivos en la raíz
-                 if (path) {
-                     const pathParts = path.split('/');
-                     folderName = pathParts.pop().replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                 }
-                 return { folder: folderName, files };
-            });
-            
-            generateMenu(dynamicFileStructure);
-
-        } catch (error) {
-            console.error('Error al construir el menú desde GitHub:', error);
-            menuContainer.innerHTML = `<p class="text-red-500 font-semibold">Error al cargar el menú.</p><p class="text-xs text-red-700">${error.message}</p>`;
-        }
-    }
-
 
     // Event listener para los clics en el menú
     menuContainer.addEventListener('click', (event) => {
         if (event.target.tagName === 'A' && event.target.dataset.path) {
             event.preventDefault();
             loadContent(event.target.dataset.path);
+            // Opcional: Ocultar el menú en móvil después de hacer clic
+            if (window.innerWidth < 768) {
+                sidebar.classList.add('-translate-x-full');
+                mainContent.classList.remove('ml-64');
+            }
         }
     });
 
@@ -158,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mainContent.classList.toggle('ml-64');
     });
 
-    // Iniciar todo el proceso.
-    fetchAndBuildMenu();
+    // Generar el menú inicial al cargar la página.
+    generateMenu();
 });
 
