@@ -74,7 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
         currentFlashcards = allFlashcards.filter(card => card.area.toString() === area);
         
         if (currentFlashcards.length === 0) {
-            alert(`No hay preguntas para el área: ${areas[area]}`);
+            // Se usa un mensaje no bloqueante en lugar de alert()
+            areaTitle.textContent = areas[area] || 'Área Desconocida';
+            welcomeMessage.innerHTML = `<div class="text-center"><h2 class="text-2xl font-bold mb-2">Próximamente</h2><p class="text-gray-600">Aún no hay preguntas para el área de ${areas[area]}.</p></div>`;
+            welcomeMessage.classList.remove('hidden');
+            gameContainer.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            updateMenuHighlight();
             return;
         }
 
@@ -94,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayCard() {
         cardInner.classList.remove('flipped');
         
-        // Espera a que la tarjeta se voltee antes de cambiar el contenido
         setTimeout(() => {
             const card = currentFlashcards[currentIndex];
             questionText.textContent = card.pregunta;
@@ -130,10 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateScore();
         
-        // Deshabilitar todos los botones
         Array.from(optionsContainer.children).forEach(btn => {
             btn.disabled = true;
-             // Marcar la respuesta correcta si el usuario se equivocó
             if (!isCorrect && btn.textContent === correctAnswer) {
                 btn.classList.add('correct');
             }
@@ -164,8 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateProgressBar() {
-        const progress = ((currentIndex + 1) / currentFlashcards.length) * 100;
-        progressBar.style.width = `${progress}%`;
+        const progress = (currentIndex / (currentFlashcards.length - 1)) * 100;
+        progressBar.style.width = currentFlashcards.length > 1 ? `${progress}%` : '100%';
     }
     
     function updateMenuHighlight() {
@@ -178,7 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- INICIALIZACIÓN Y EVENTOS ---
     function initialize() {
         allFlashcards = flashcardData.map(row => ({ ...row }));
         
@@ -189,6 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const area = urlParams.get('area');
         if (area && areas[area]) {
             startGame(area);
+        } else {
+            welcomeMessage.classList.remove('hidden');
+            gameContainer.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
         }
     }
     
