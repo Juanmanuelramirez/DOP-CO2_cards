@@ -70,10 +70,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- ELEMENTOS DEL DOM (YA VALIDADOS) ---
+    // Se utiliza la sintaxis de alias en la desestructuración para mapear los IDs con guiones a variables camelCase.
     const {
-        areaTitle, cardCounter, questionText, optionsContainer,
-        answerContainer, explanationText, flipButton, prevButton,
-        nextButton, flashcard, welcomeMessage
+        'area-title': areaTitle,
+        'card-counter': cardCounter,
+        'question-text': questionText,
+        'options-container': optionsContainer,
+        'answer-container': answerContainer,
+        'explanation-text': explanationText,
+        'flip-button': flipButton,
+        'prev-button': prevButton,
+        'next-button': nextButton,
+        flashcard,
+        'welcome-message': welcomeMessage
     } = elements;
 
     let allFlashcards = [];
@@ -117,7 +126,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayCard = () => {
         if (currentFlashcards.length === 0) return;
         isFlipped = false;
-        flashcard.classList.remove('flipped');
+        const cardContainer = flashcard.querySelector('.relative');
+        if (cardContainer) cardContainer.classList.remove('flipped');
+        
         const card = currentFlashcards[currentIndex];
         questionText.textContent = card.pregunta;
         cardCounter.textContent = `${currentIndex + 1} / ${currentFlashcards.length}`;
@@ -128,11 +139,13 @@ document.addEventListener('DOMContentLoaded', () => {
             button.textContent = opcion;
             optionsContainer.appendChild(button);
         });
-        explanationText.textContent = card.explicacion;
-        const answerContent = answerContainer.querySelector('.p-6');
-        if (answerContent) {
-            answerContent.innerHTML = `<p class="text-gray-700">${card.explicacion}</p><p class="mt-4 text-lg"><strong>Respuesta Correcta:</strong> ${card.respuesta_correcta}</p>`;
-        }
+
+        explanationText.parentElement.innerHTML = `
+            <h2 class="text-lg font-semibold text-green-600">Respuesta y Explicación</h2>
+            <div id="answer-container" class="mt-4">
+                <p id="explanation-text" class="text-gray-700">${card.explicacion}</p>
+                <p class="mt-4 text-lg"><strong>Respuesta Correcta:</strong> ${card.respuesta_correcta}</p>
+            </div>`;
         updateNavButtons();
     };
 
@@ -146,7 +159,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- MANEJADORES DE EVENTOS ---
     flipButton.addEventListener('click', () => {
         isFlipped = !isFlipped;
-        flashcard.classList.toggle('flipped');
+        const cardContainer = flashcard.querySelector('.relative');
+        if (cardContainer) cardContainer.classList.toggle('flipped');
     });
     prevButton.addEventListener('click', () => {
         if (currentIndex > 0) {
