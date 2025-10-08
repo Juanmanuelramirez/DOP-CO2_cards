@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Tarjetas Didácticas: DevOps en AWS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --aws-orange: #FF9900;
+            --aws-dark-charcoal: #232F3E;
+            --text-dark: #202124;
+            --text-light: #5f6368;
+            --bg-light: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        /* --- Animación de volteo --- */
+        .card-container {
+            perspective: 1500px;
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+        .card-container.is-flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(32,33,36,.28);
+            border: 1px solid #d2d2d2;
+            background-color: white;
+        }
+        
+        .card-front {
+            justify-content: space-between;
+            padding-top: 1.5rem;
+            padding-bottom: 2.5rem;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        
+        .aws-logo {
+            width: 80px; /* Ajustado para el nuevo logo */
+            height: auto;
+        }
+
+        /* --- Animaciones de deslizamiento --- */
+        @keyframes slideOutLeft {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(-150%); opacity: 0; }
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(150%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(150%); opacity: 0; }
+        }
+        @keyframes slideInLeft {
+            from { transform: translateX(-150%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .slide-out-left { animation: slideOutLeft 0.5s forwards cubic-bezier(0.47, 0, 0.745, 0.715); }
+        .slide-in-right { animation: slideInRight 0.5s forwards cubic-bezier(0.39, 0.575, 0.565, 1); }
+        .slide-out-right { animation: slideOutRight 0.5s forwards cubic-bezier(0.47, 0, 0.745, 0.715); }
+        .slide-in-left { animation: slideInLeft 0.5s forwards cubic-bezier(0.39, 0.575, 0.565, 1); }
+        
+        .btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <main class="w-full max-w-2xl mx-auto flex flex-col items-center space-y-6">
+        <!-- Título -->
+        <div class="text-center">
+            <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-[var(--aws-dark-charcoal)]">DevOps en AWS</h1>
+            <p class="text-gray-600 mt-2 text-lg">Pon a prueba tu conocimiento.</p>
+        </div>
+
+        <!-- Barra de Progreso -->
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+            <div id="progressBar" class="bg-[var(--aws-orange)] h-2.5 rounded-full transition-all duration-500 ease-out"></div>
+        </div>
+
+        <!-- Contenedor de la Tarjeta -->
+        <div id="card-wrapper" class="w-full h-80 sm:h-96">
+            <div id="card" class="card-container w-full h-full cursor-pointer">
+                <div class="card-inner">
+                    <div class="card-face card-front">
+                        <!-- Logo de AWS Corregido -->
+                        <svg class="aws-logo" xmlns="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Amazon_Web_Services_Logo.svg/1280px-Amazon_Web_Services_Logo.svg.png" viewBox="0 0 128 128"><path d="M48.2 88.29a3.86 3.86 0 00-1.28.21 4 4 0 00-1.12.38 4.29 4.29 0 00-.91.53 4.38 4.38 0 00-1.4 1.7 5.76 5.76 0 00-.51 1.87c-.05.7-.05 1.41-.05 2.11s0 1.4.05 2.09a5.76 5.76 0 00.51 1.87 4.38 4.38 0 001.4 1.7 4.29 4.29 0 00.91.53 4 4 0 001.12.38 3.86 3.86 0 001.28.21 4.23 4.23 0 002.43-.64 4.18 4.18 0 001.69-1.82 7.11 7.11 0 00.57-2.61c.05-.75.08-1.5.08-2.25s-.03-1.5-.08-2.25a7.11 7.11 0 00-.57-2.61 4.18 4.18 0 00-1.69-1.82 4.23 4.23 0 00-2.43-.64z" fill="#232F3E"/><path d="M79.79 88.29a3.86 3.86 0 011.28.21 4 4 0 011.12.38 4.29 4.29 0 01.91.53 4.38 4.38 0 011.4 1.7 5.76 5.76 0 01.51 1.87c.05.7.05 1.41.05 2.11s0 1.4-.05 2.09a5.76 5.76 0 01-.51 1.87 4.38 4.38 0 01-1.4 1.7 4.29 4.29 0 01-.91.53 4 4 0 01-1.12.38 3.86 3.86 0 01-1.28.21 4.23 4.23 0 01-2.43-.64 4.18 4.18 0 01-1.69-1.82 7.11 7.11 0 01-.57-2.61c-.05-.75-.08-1.5-.08-2.25s.03-1.5.08-2.25a7.11 7.11 0 01.57-2.61 4.18 4.18 0 011.69-1.82 4.23 4.23 0 012.43-.64z" fill="#232F3E"/><path d="M54.53 91.54a22.28 22.28 0 01-3.69-1.28 17.5 17.5 0 01-4.71-3.21 16.23 16.23 0 01-3.6-4.57 20.34 20.34 0 01-2-5.42 28.53 28.53 0 01-.7-6V58.46h5.45v12.2a21.6 21.6 0 00.58 5.1 16.32 16.32 0 001.7 4.47 12.35 12.35 0 002.83 3.53 10.42 10.42 0 003.88 2.22 9.77 9.77 0 004.75.76 9.53 9.53 0 004.65-.82 10.29 10.29 0 003.81-2.34 12.23 12.23 0 002.76-3.61 16.24 16.24 0 001.62-4.5 21.35 21.35 0 00.51-5V58.46h5.45v12.2a29.17 29.17 0 01-.7 6 20.9 20.9 0 01-2.05 5.51 16.28 16.28 0 01-3.64 4.6 17.43 17.43 0 01-4.71 3.21 22.18 22.18 0 01-5.5.95c-.32 0-.64-.02-1-.03z" fill="#232F3E"/><path d="M89.37 91.51a14.24 14.24 0 01-5.18-1.07 11.23 11.23 0 01-4.2-3 10.15 10.15 0 01-2.8-4.3 14.2 14.2 0 01-1-5.13V58.46h5.45v19.18a8 8 0 00.58 3.32 5.16 5.16 0 001.52 2.33 4.58 4.58 0 002.8 1 4.76 4.76 0 003.11-.84 5 5 0 001.74-2.12 7.82 7.82 0 00.61-3.14V58.46h5.4v29.64h-4.7v-2.81a11.1 11.1 0 01-4.37 2.87 13.52 13.52 0 01-5 .95z" fill="#232F3E"/><path d="M110.74 91.51a13.63 13.63 0 01-4.93-1 11.75 11.75 0 01-4.14-2.89l2.4-3.52a8.31 8.31 0 003.07 2.14 8.79 8.79 0 003.73.71 6.54 6.54 0 003.1-.64 4.29 4.29 0 002-2 5.3 5.3 0 00.68-2.67 6.44 6.44 0 00-.54-2.73l-10.3-24h5.9l7.6 18.29 7.62-18.29h5.88l-10.2 24.6a10.85 10.85 0 01-1.35 3.39 8.21 8.21 0 01-3.26 2.88 10.23 10.23 0 01-4.59 1.07z" fill="#232F3E"/><path d="M37.31 56.76h-5.45V30.5h5.45z" fill="#232F3E"/><path d="M22.34 43.64a13.92 13.92 0 01-4.82-1 11.45 11.45 0 01-4.1-2.9l2.25-3.64a8.31 8.31 0 003.17 2.2 9 9 0 003.8.72 6.52 6.52 0 003.1-.65 4.3 4.3 0 002-2 5.3 5.3 0 00.67-2.67 7.72 7.72 0 00-.7-3.23L17.5 9.09h6l7.53 18.06L38.59 9.09h5.84l-10.15 24.3a10.85 10.85 0 01-1.35 3.39 8.44 8.44 0 01-3.3 2.94 10.23 10.23 0 01-4.59 1.07z" fill="#232F3E"/><path d="M57.65 43.64H42.49V38.19h15.16z" fill="#232F3E"/><path d="M72.8 43.64h-5.45V9.09h5.45z" fill="#232F3E"/><path d="M100.22 43.64H85.06V38.19h15.16z" fill="#232F3E"/><path d="M85.06 23.36v-5.45h22.6v5.45z" fill="#232F3E"/><path d="M96.33 118.91a42.51 42.51 0 01-28.27-10.42 42.15 42.15 0 01-13.8-28.16 41.29 41.29 0 01-1.12-9.67 42.17 42.17 0 019.2-26.65 42.56 42.56 0 0125.8-18.42.74.74 0 01.32-.05.71.71 0 01.33.05 42.56 42.56 0 0125.8,18.42 42.17 42.17 0 019.2,26.65 41.29 41.29 0 01-1.12,9.67 42.15 42.15 0 01-13.8,28.16 42.51 42.51 0 01-28.27,10.42zm0-78.5a36.93 36.93 0 00-22.36,15.91 36.65 36.65 0 00-8,23.07 35.84 35.84 0 001,8.37 36.62 36.62 0 0012,24.37 36.95 36.95 0 0024.47,9 37 37 0 0024.49-9 36.62 36.62 0 0012-24.37 35.84 35.84 0 001-8.37 36.65 36.65 0 00-8-23.07 36.93 36.93 0 00-22.36-15.91.71.71 0 00-.31 0 .74.74 0 00-.32 0z" fill="#FF9900"/></svg>
+
+                        <p class="text-xl sm:text-2xl font-medium text-center"></p>
+                    </div>
+                    <div class="card-face card-back">
+                        <p class="text-lg sm:text-xl text-center text-gray-700 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Indicador de Progreso (Texto) -->
+        <div id="progressText" class="text-gray-500 font-medium tracking-wider">Tarjeta 1 / 25</div>
+
+        <!-- Controles de Navegación -->
+        <div class="flex items-center justify-center w-full space-x-4">
+            <button id="prevBtn" class="btn bg-white text-gray-700 font-medium py-3 px-6 rounded-lg shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                Anterior
+            </button>
+            <button id="flipBtn" class="btn bg-[var(--aws-orange)] text-white font-bold py-3 px-8 rounded-lg shadow-lg">
+                Voltear
+            </button>
+            <button id="nextBtn" class="btn bg-white text-gray-700 font-medium py-3 px-6 rounded-lg shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                Siguiente
+            </button>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const flashcards = [
+                { "front": "¿Cuál es la filosofía principal de DevOps?", "back": "Un conjunto de prácticas para mejorar la capacidad de una organización de entregar aplicaciones y servicios a alta velocidad, uniendo desarrollo (Dev) y operaciones (Ops)." },
+                { "front": "¿Cuál es el acrónimo de los principios clave de DevOps?", "back": "CAMS: Cultura, Automatización, Medición y Compartir (Sharing)." },
+                { "front": "¿En qué consiste el pilar 'Cultura' en CAMS?", "back": "Fomentar la colaboración, la responsabilidad compartida y romper los silos entre los equipos de desarrollo y operaciones." },
+                { "front": "¿Qué implica el pilar 'Automatización' en CAMS?", "back": "Utilizar la tecnología para automatizar procesos manuales y repetitivos en el ciclo de vida del software, desde la compilación hasta el despliegue." },
+                { "front": "¿Cuál es el objetivo del pilar 'Medición' en CAMS?", "back": "Recopilar datos y métricas sobre el rendimiento de las aplicaciones y la infraestructura para obtener retroalimentación y tomar decisiones informadas." },
+                { "front": "¿Qué promueve el pilar 'Compartir' (Sharing) en CAMS?", "back": "La distribución de conocimientos, herramientas y mejores prácticas en toda la organización para mejorar la eficiencia colectiva." },
+                { "front": "¿Qué significan las siglas CI/CD?", "back": "Integración Continua (Continuous Integration) y Entrega Continua (Continuous Delivery) o Despliegue Continuo (Continuous Deployment)." },
+                { "front": "¿Qué servicio de AWS se utiliza para orquestar un pipeline de CI/CD?", "back": "AWS CodePipeline: Automatiza las fases de compilación, prueba y despliegue del proceso de lanzamiento de software." },
+                { "front": "¿Qué servicio de AWS compila el código y ejecuta pruebas?", "back": "AWS CodeBuild: Compila el código fuente, ejecuta pruebas y produce paquetes de software listos para desplegar." },
+                { "front": "¿Qué servicio de AWS automatiza los despliegues de aplicaciones?", "back": "AWS CodeDeploy: Automatiza los despliegues en instancias de Amazon EC2, AWS Lambda y servidores on-premises." },
+                { "front": "¿Qué es la Infraestructura como Código (IaC)?", "back": "La gestión y aprovisionamiento de la infraestructura a través de código y herramientas de automatización, en lugar de procesos manuales." },
+                { "front": "¿Cuál es el principal servicio de AWS para IaC?", "back": "AWS CloudFormation: Permite modelar y configurar los recursos de AWS en archivos de texto (YAML o JSON) para crear y gestionar 'stacks' de infraestructura." },
+                { "front": "¿Cuál es una ventaja clave de usar AWS CloudFormation?", "back": "Permite crear entornos consistentes y repetibles, versionar la infraestructura como si fuera código y automatizar la recuperación ante desastres." },
+                { "front": "¿Qué servicio de AWS se usa para monitoreo y observabilidad?", "back": "Amazon CloudWatch: Recopila y rastrea métricas, recoge y monitoriza archivos de log, y establece alarmas." },
+                { "front": "¿Para qué sirve Amazon CloudWatch Logs?", "back": "Permite centralizar, monitorizar, y almacenar archivos de log de diversas fuentes como EC2, Lambda, y otros servicios de AWS." },
+                { "front": "¿Qué servicio de AWS registra y audita las llamadas a la API?", "back": "AWS CloudTrail: Registra todas las llamadas a la API de AWS realizadas en una cuenta, proporcionando un historial de eventos para auditoría de seguridad y cumplimiento." },
+                { "front": "¿Cuál es la diferencia principal entre CloudWatch y CloudTrail?", "back": "CloudWatch se enfoca en el rendimiento de los recursos (métricas y logs), mientras que CloudTrail se enfoca en la actividad de la cuenta (quién hizo qué y cuándo)." },
+                { "front": "¿En qué consiste la estrategia de despliegue 'Blue/Green'?", "back": "Técnica para lanzar una nueva versión (Green) junto a la versión de producción (Blue), permitiendo cambiar el tráfico a la nueva versión una vez probada." },
+                { "front": "¿Cuál es el mayor beneficio de la estrategia Blue/Green?", "back": "Minimiza el tiempo de inactividad durante el despliegue y permite una reversión rápida y segura simplemente redirigiendo el tráfico de vuelta al entorno Blue." },
+                { "front": "¿Qué servicio de AWS se utiliza para el control de versiones de código fuente?", "back": "AWS CodeCommit: Un servicio de control de código fuente seguro, altamente escalable y gestionado que aloja repositorios Git privados." },
+                { "front": "¿Qué es un 'artefacto' en el contexto de AWS CodePipeline?", "back": "Una colección de archivos, como el código fuente o los archivos de compilación, que se pasa como entrada o salida entre las etapas de un pipeline." },
+                { "front": "¿Cuál es el propósito de las pruebas unitarias en un pipeline de CI?", "back": "Verificar que las unidades individuales de código fuente (como funciones o métodos) funcionan como se espera, de forma aislada." },
+                { "front": "¿Cuál es el propósito de las pruebas de integración en un pipeline de CI?", "back": "Verificar que diferentes módulos o servicios de software interactúan correctamente entre sí." },
+                { "front": "¿Qué práctica de DevOps implica fusionar código en un repositorio central frecuentemente?", "back": "Integración Continua (CI)." },
+                { "front": "¿Qué práctica de DevOps extiende la CI para liberar automáticamente los cambios a un entorno de preparación?", "back": "Entrega Continua (CD)." }
+            ];
+
+            const cardElement = document.getElementById('card');
+            const cardWrapper = document.getElementById('card-wrapper');
+            const cardFrontText = document.querySelector('.card-front p');
+            const cardBackText = document.querySelector('.card-back p');
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const flipBtn = document.getElementById('flipBtn');
+
+            let currentCardIndex = 0;
+            let isAnimating = false;
+            
+            function updateCardContent(isInitial = false) {
+                const cardData = flashcards[currentCardIndex];
+                cardFrontText.textContent = cardData.front;
+                cardBackText.textContent = cardData.back;
+                progressText.textContent = `Tarjeta ${currentCardIndex + 1} / ${flashcards.length}`;
+                
+                const progressPercentage = ((currentCardIndex + 1) / flashcards.length) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+
+                if (!isInitial && cardElement.classList.contains('is-flipped')) {
+                    cardElement.classList.remove('is-flipped');
+                }
+                
+                prevBtn.disabled = currentCardIndex === 0;
+                nextBtn.disabled = currentCardIndex === flashcards.length - 1;
+            }
+
+            function flipCard() {
+                if(isAnimating) return;
+                cardElement.classList.toggle('is-flipped');
+            }
+
+            function changeCard(direction) {
+                if (isAnimating) return;
+                
+                const newIndex = currentCardIndex + direction;
+                if (newIndex < 0 || newIndex >= flashcards.length) return;
+                
+                isAnimating = true;
+                const slideOutClass = direction === 1 ? 'slide-out-left' : 'slide-out-right';
+                const slideInClass = direction === 1 ? 'slide-in-right' : 'slide-in-left';
+
+                cardWrapper.classList.add(slideOutClass);
+                
+                setTimeout(() => {
+                    currentCardIndex = newIndex;
+                    updateCardContent();
+                    
+                    cardWrapper.classList.remove(slideOutClass);
+                    cardWrapper.classList.add(slideInClass);
+                    
+                    setTimeout(() => {
+                        cardWrapper.classList.remove(slideInClass);
+                        isAnimating = false;
+                    }, 500);
+                }, 500);
+            }
+            
+            flipBtn.addEventListener('click', flipCard);
+            cardElement.addEventListener('click', flipCard);
+            nextBtn.addEventListener('click', () => changeCard(1));
+            prevBtn.addEventListener('click', () => changeCard(-1));
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') nextBtn.click();
+                if (e.key === 'ArrowLeft') prevBtn.click();
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    flipBtn.click();
+                }
+            });
+
+            updateCardContent(true);
+        });
+    </script>
+</body>
+</html>
+
