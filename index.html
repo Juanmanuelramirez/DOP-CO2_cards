@@ -10,18 +10,30 @@
 </head>
 <body class="bg-gray-100 font-['Poppins'] flex items-center justify-center min-h-screen">
 
-    <div class="flex w-full max-w-7xl h-[80vh] bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <!-- Selector de Idioma -->
+    <div id="language-selector-overlay" class="absolute inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-50">
+        <div class="bg-white p-10 rounded-xl shadow-2xl text-center">
+            <h1 class="text-3xl font-bold mb-2 text-gray-800">Select Language</h1>
+            <h2 class="text-2xl font-bold mb-6 text-gray-700">Selecciona Idioma</h2>
+            <div class="flex gap-5 justify-center">
+                <button id="lang-en" class="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-transform hover:scale-105 text-lg font-semibold shadow-lg">English</button>
+                <button id="lang-es" class="px-8 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-transform hover:scale-105 text-lg font-semibold shadow-lg">Español</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container" class="flex w-full max-w-7xl h-[80vh] bg-white rounded-2xl shadow-2xl overflow-hidden hidden">
         <!-- Menú Lateral -->
         <aside class="w-1/4 bg-slate-50 p-6 border-r flex flex-col">
-            <h2 class="text-xl font-bold mb-4 border-b pb-3 text-slate-800">Áreas de Conocimiento</h2>
+            <h2 class="text-xl font-bold mb-4 border-b pb-3 text-slate-800" data-key="areas_conocimiento">Áreas de Conocimiento</h2>
             <nav class="flex-grow">
                 <ul id="area-menu">
-                    <li><a href="?area=1" class="menu-link" data-area="1">Automatización del SDLC</a></li>
-                    <li><a href="?area=2" class="menu-link" data-area="2">Gestión de Configuración e IaC</a></li>
-                    <li><a href="?area=3" class="menu-link" data-area="3">Soluciones de Nube Resilientes</a></li>
-                    <li><a href="?area=4" class="menu-link" data-area="4">Monitoreo y Registros</a></li>
-                    <li><a href="?area=5" class="menu-link" data-area="5">Respuesta a Incidentes y Eventos</a></li>
-                    <li><a href="?area=6" class="menu-link" data-area="6">Seguridad y Cumplimiento</a></li>
+                    <li><a href="#" class="menu-link" data-area="1" data-key="area_1"></a></li>
+                    <li><a href="#" class="menu-link" data-area="2" data-key="area_2"></a></li>
+                    <li><a href="#" class="menu-link" data-area="3" data-key="area_3"></a></li>
+                    <li><a href="#" class="menu-link" data-area="4" data-key="area_4"></a></li>
+                    <li><a href="#" class="menu-link" data-area="5" data-key="area_5"></a></li>
+                    <li><a href="#" class="menu-link" data-area="6" data-key="area_6"></a></li>
                 </ul>
             </nav>
         </aside>
@@ -29,59 +41,50 @@
         <!-- Contenido Principal -->
         <main class="w-3/4 p-8 flex flex-col items-center justify-center relative">
             
-            <!-- Mensaje de Bienvenida -->
             <div id="welcome-message" class="text-center">
-                <h1 class="text-4xl font-bold text-gray-800">Desafío Flashcards DOP-C02</h1>
-                <p class="text-gray-500 mt-4 text-lg">Selecciona un área para iniciar el desafío.</p>
+                <h1 class="text-4xl font-bold text-gray-800" data-key="welcome_title"></h1>
+                <p class="text-gray-500 mt-4 text-lg" data-key="welcome_subtitle"></p>
             </div>
 
-            <!-- Contenedor del Juego -->
             <div id="game-container" class="w-full max-w-3xl hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h1 id="area-title" class="text-2xl font-bold text-gray-800"></h1>
-                    <div class="text-lg font-semibold text-blue-600">Puntuación: <span id="score">0</span></div>
+                    <div class="text-lg font-semibold text-blue-600"><span data-key="puntuacion"></span>: <span id="score">0</span></div>
                 </div>
                 
-                 <!-- Barra de Progreso -->
-                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                 <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
                     <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
 
                 <div id="flashcard" style="perspective: 1500px;">
                     <div id="card-inner" class="card-inner">
-                        <!-- Cara Frontal (Pregunta) -->
                         <div class="card-face card-front">
                             <div class="flex justify-between items-center">
-                                <h2 class="text-lg font-semibold text-blue-600">Pregunta</h2>
+                                <h2 class="text-lg font-semibold text-blue-600" data-key="pregunta"></h2>
                                 <span id="card-counter" class="text-sm font-medium text-gray-500"></span>
                             </div>
                             <p id="question-text" class="text-xl text-gray-800 my-4 min-h-[100px]"></p>
                             <div id="options-container" class="mt-4 space-y-3"></div>
                         </div>
 
-                        <!-- Cara Trasera (Respuesta) -->
                         <div class="card-face card-back">
-                             <div id="feedback-header" class="flex items-center gap-3 mb-4">
-                                <!-- El ícono y texto se insertan desde JS -->
-                             </div>
+                             <div id="feedback-header" class="flex items-center gap-3 mb-4"></div>
                              <p id="explanation-text" class="text-gray-700"></p>
-                             <p class="mt-4 text-lg"><strong>Respuesta Correcta:</strong> <span id="correct-answer-text"></span></p>
+                             <p class="mt-4 text-lg"><strong data-key="respuesta_correcta_label"></strong> <span id="correct-answer-text"></span></p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Botones de Navegación -->
                 <div id="navigation-buttons" class="flex justify-center items-center mt-6">
-                    <button id="next-button" class="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-lg font-semibold hidden">Siguiente Pregunta</button>
+                    <button id="next-button" class="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-lg font-semibold hidden" data-key="siguiente_pregunta"></button>
                 </div>
             </div>
 
-            <!-- Pantalla de Resultados -->
             <div id="results-screen" class="text-center hidden">
-                <h1 class="text-4xl font-bold text-gray-800">¡Desafío Completado!</h1>
-                <p class="text-2xl text-gray-600 mt-4">Tu puntuación final es:</p>
+                <h1 class="text-4xl font-bold text-gray-800" data-key="results_title"></h1>
+                <p class="text-2xl text-gray-600 mt-4" data-key="results_subtitle"></p>
                 <div id="final-score" class="text-7xl font-bold text-blue-600 my-6"></div>
-                <button id="retry-button" class="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-lg font-semibold">Reintentar</button>
+                <button id="retry-button" class="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-lg font-semibold" data-key="reintentar"></button>
             </div>
         </main>
     </div>
