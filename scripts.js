@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reemplaza los siguientes valores con tu nombre de usuario y el nombre
     // de tu repositorio donde se encuentran los archivos HTML.
     // =======================================================================
-    const GITHUB_USER = 'juanmanuelramirez';
+    const GITHUB_USER = 'Juanmanuelramirez';
     const GITHUB_REPO = 'DOP-CO2_cards';
 
 
