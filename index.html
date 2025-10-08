@@ -26,7 +26,7 @@
 
     <!-- BARRA LATERAL (SIDEBAR) -->
     <aside id="sidebar" class="bg-white text-gray-800 w-64 h-full fixed top-0 left-0 z-20 shadow-xl p-6 transform translate-x-0 overflow-y-auto">
-        <h1 class="text-2xl font-bold mb-6 border-b pb-4">\nMenú del Sitio</h1>
+        <h1 class="text-2xl font-bold mb-6 border-b pb-4">Menú del Sitio</h1>
         <nav id="menu-container">
             <!-- El menú se generará aquí automáticamente desde el script -->
         </nav>
@@ -40,7 +40,7 @@
                 Selecciona una opción del menú de la izquierda para cargar el contenido.
             </p>
              <p class="mt-4 text-sm text-gray-500">
-                <b>Nota importante:</b> Por razones de seguridad, el navegador no puede leer las carpetas de tu computadora. Debes listar tus archivos en la sección `fileStructure` dentro del script de esta página para que el menú se genere automáticamente.
+                <b>Nota importante:</b> El menú se genera automáticamente leyendo los archivos <b>.html</b> de tu repositorio de GitHub. Asegúrate de haber configurado las variables <code>GITHUB_USER</code> y <code>GITHUB_REPO</code> en el archivo <code>scripts.js</code>.
             </p>
         </div>
     </main>
