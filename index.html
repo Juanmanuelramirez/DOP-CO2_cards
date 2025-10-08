@@ -3,49 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navegación con Barra Lateral Dinámica</title>
-    <!-- Se utiliza Tailwind CSS para los estilos -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Agregamos transiciones suaves para una mejor experiencia de usuario */
-        #sidebar, #main-content {
-            transition: all 0.3s ease-in-out;
-        }
-    </style>
+    <title>Flashcards para Certificación DOP-C02</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-100 font-sans">
-
-    <!-- BOTÓN PARA MOSTRAR/OCULTAR EL MENÚ -->
-    <button id="toggle-btn" class="fixed top-4 left-4 z-30 bg-white p-2 rounded-md shadow-lg border border-gray-200">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-    </button>
-
-    <!-- BARRA LATERAL (SIDEBAR) -->
-    <aside id="sidebar" class="bg-white text-gray-800 w-64 h-full fixed top-0 left-0 z-20 shadow-xl p-6 transform translate-x-0 overflow-y-auto">
-        <h1 class="text-2xl font-bold mb-6 border-b pb-4">Menú del Sitio</h1>
-        <nav id="menu-container">
-            <!-- El menú se generará aquí automáticamente desde el script -->
+<body>
+    <div id="app-container">
+        <!-- Menú de Navegación Lateral -->
+        <nav class="sidebar">
+            <h2>Áreas de Conocimiento</h2>
+            <ul id="knowledge-areas-menu">
+                <li><a href="index.html?area=1">Automatización del SDLC</a></li>
+                <li><a href="index.html?area=2">Gestión de Configuración e IaC</a></li>
+                <li><a href="index.html?area=3">Soluciones de Nube Resilientes</a></li>
+                <li><a href="index.html?area=4">Monitoreo y Registros</a></li>
+                <li><a href="index.html?area=5">Respuesta a Incidentes y Eventos</a></li>
+                <li><a href="index.html?area=6">Seguridad y Cumplimiento</a></li>
+            </ul>
         </nav>
-    </aside>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main id="main-content" class="ml-64 p-8">
-        <div class="bg-white p-8 rounded-lg shadow-md">
-            <h2 class="text-3xl font-bold mb-4">Bienvenido</h2>
-            <p class="text-gray-600">
-                Selecciona una opción del menú de la izquierda para cargar el contenido.
-            </p>
-             <p class="mt-4 text-sm text-gray-500">
-                <b>Nota importante:</b> El menú se genera a partir de la lista <code>fileStructure</code> definida en el archivo <code>scripts.js</code>.
-            </p>
-        </div>
-    </main>
+        <!-- Contenido Principal: Flashcards -->
+        <main class="main-content">
+            <h1 id="area-title">Selecciona un área para comenzar</h1>
+            <p id="card-counter"></p>
 
-    <!-- El código JavaScript se ha movido a un archivo externo -->
-    <script src="scripts.js" defer></script>
+            <!-- Contenedor de la Tarjeta y Mensajes -->
+            <div id="flashcard-viewer">
+                <!-- Mensaje inicial o de carga -->
+                <div id="welcome-message" class="card-placeholder">
+                    <p>Por favor, selecciona un área de conocimiento del menú de la derecha para iniciar tu examen de simulación.</p>
+                </div>
+
+                <!-- Contenedor de la tarjeta que rota -->
+                <div class="flashcard-container" id="flashcard-container" style="display: none;">
+                    <div class="flashcard" id="flashcard">
+                        <!-- Cara Frontal (Pregunta y Opciones) -->
+                        <div class="card-face card-front">
+                            <p class="question-text" id="question"></p>
+                            <div class="options" id="options"></div>
+                        </div>
+                        <!-- Cara Trasera (Respuesta y Explicación) -->
+                        <div class="card-face card-back">
+                            <h3 class="answer-title">Respuesta Correcta</h3>
+                            <p class="correct-answer" id="correct-answer"></p>
+                            <h4 class="explanation-title">Explicación</h4>
+                            <p class="explanation-text" id="explanation"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles de Navegación -->
+            <div class="controls" id="controls" style="display: none;">
+                <button id="prev-btn">Anterior</button>
+                <button id="flip-btn">Mostrar Respuesta</button>
+                <button id="next-btn">Siguiente</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Referencia al script JS -->
+    <script src="script.js"></script>
 </body>
 </html>

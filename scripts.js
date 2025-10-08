@@ -1,116 +1,142 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- ELEMENTOS DEL DOM ---
+    const areaTitle = document.getElementById('area-title');
+    const cardCounter = document.getElementById('card-counter');
+    const flashcardContainer = document.getElementById('flashcard-container');
+    const welcomeMessage = document.getElementById('welcome-message');
+    const flashcard = document.getElementById('flashcard');
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const correctAnswerEl = document.getElementById('correct-answer');
+    const explanationEl = document.getElementById('explanation');
+    const controls = document.getElementById('controls');
+    const flipBtn = document.getElementById('flip-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
 
-    // =======================================================================
-    // ¡LA SOLUCIÓN MÁS UNIVERSAL! - DEFINE AQUÍ LA ESTRUCTURA DE TU SITIO
-    // =======================================================================
-    // Este método es el más confiable y funcionará en CUALQUIER LUGAR 
-    // (en tu PC, en GitHub, en cualquier hosting).
-    //
-    // Para que el menú se actualice automáticamente cuando añades archivos,
-    // solo tienes que añadir la nueva entrada en esta lista.
-    // =======================================================================
-    const fileStructure = [
-        {
-            folder: 'Introducción',
-            files: [
-                { name: 'Bienvenida', path: 'introduccion/bienvenida.html' },
-                { name: 'Acerca de', path: 'introduccion/acerca.html' }
-            ]
-        },
-        {
-            folder: 'Flash Cards',
-            files: [
-                { name: 'Filosofia y Servicios', path: 'Flash Cards/01.Filosofia_Servicios.html' },
-                { name: 'Code Suite', path: 'Flash Cards/02.CodeSuite.html' }
-            ]
-        }
-    ];
-
-    const menuContainer = document.getElementById('menu-container');
-    const mainContent = document.getElementById('main-content');
-    const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('toggle-btn');
+    // --- ESTADO DE LA APLICACIÓN ---
+    let allFlashcards = [];
+    let currentCards = [];
+    let currentIndex = 0;
     
-    /**
-     * Genera el menú HTML en la barra lateral a partir de la estructura definida.
-     */
-    function generateMenu() {
-        if (fileStructure.length === 0) {
-            menuContainer.innerHTML = '<p class="text-gray-500">No hay elementos en el menú. Define la estructura en <code>scripts.js</code>.</p>';
-            return;
-        }
-
-        menuContainer.innerHTML = '';
-        fileStructure.forEach(item => {
-            const folderTitle = document.createElement('h3');
-            folderTitle.className = 'text-lg font-semibold text-gray-500 mt-6 mb-2 uppercase tracking-wider';
-            folderTitle.textContent = item.folder;
-            menuContainer.appendChild(folderTitle);
-
-            const fileList = document.createElement('ul');
-            fileList.className = 'space-y-1';
-            item.files.forEach(file => {
-                const listItem = document.createElement('li');
-                const link = document.createElement('a');
-                link.href = '#';
-                link.textContent = file.name;
-                link.dataset.path = file.path;
-                link.className = 'block text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md p-2 transition-colors duration-200';
-                listItem.appendChild(link);
-                fileList.appendChild(listItem);
-            });
-            menuContainer.appendChild(fileList);
-        });
-    }
-    
-    /**
-     * Carga el contenido de un archivo HTML en el área principal.
-     * Esta es la versión estática que solo muestra el HTML.
-     */
-    function loadContent(path) {
-         fetch(path)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error HTTP ${response.status} - No se pudo encontrar el archivo en: ${path}`);
-                }
-                return response.text();
-            })
-            .then(html => {
-                mainContent.innerHTML = html;
-            })
-            .catch(error => {
-                console.error('Error al cargar la página:', error);
-                mainContent.innerHTML = `
-                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-6 rounded-lg shadow-md" role="alert">
-                        <h2 class="font-bold text-xl mb-2">Error al Cargar Contenido</h2>
-                        <p>${error.message}</p>
-                        <p class="mt-2 text-sm">Asegúrate de que la ruta en 'fileStructure' sea correcta y el archivo exista.</p>
-                    </div>
-                `;
-            });
-    }
-
-    // Event listener para los clics en el menú
-    menuContainer.addEventListener('click', (event) => {
-        if (event.target.tagName === 'A' && event.target.dataset.path) {
-            event.preventDefault();
-            loadContent(event.target.dataset.path);
-        }
-    });
-
-    // Funcionalidad para ocultar/mostrar la barra lateral
-    toggleBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('-translate-x-full');
-        mainContent.classList.toggle('ml-64');
-    });
+    const KNOWLEDGE_AREAS = {
+        '1': "Automatización del SDLC",
+        '2': "Gestión de Configuración e IaC",
+        '3': "Soluciones de Nube Resilientes",
+        '4': "Monitoreo y Registros",
+        '5': "Respuesta a Incidentes y Eventos",
+        '6': "Seguridad y Cumplimiento"
+    };
 
     // --- INICIALIZACIÓN ---
-    // 1. Generar el menú.
-    generateMenu();
     
-    // 2. Cargar la primera página por defecto para que no se vea vacío.
-    if (fileStructure.length > 0 && fileStructure[0].files.length > 0) {
-        loadContent(fileStructure[0].files[0].path);
-    }
-});
+    // Función para obtener parámetros de la URL
+    const getAreaFromURL = () => {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('area');
+    };
 
+    // Cargar y procesar el archivo CSV
+    const loadFlashcards = async () => {
+        try {
+            const response = await fetch('flashcards.csv');
+            if (!response.ok) {
+                throw new Error(`Error al cargar el archivo CSV: ${response.statusText}`);
+            }
+            const csvData = await response.text();
+            allFlashcards = parseCSV(csvData);
+            
+            const areaId = getAreaFromURL();
+            if (areaId && KNOWLEDGE_AREAS[areaId]) {
+                filterAndDisplayCards(areaId);
+            }
+        } catch (error) {
+            console.error(error);
+            areaTitle.textContent = "Error";
+            welcomeMessage.innerHTML = `<p>No se pudieron cargar las tarjetas. Revisa la consola para más detalles y asegúrate de que el archivo 'flashcards.csv' exista.</p>`;
+            welcomeMessage.style.display = 'flex';
+        }
+    };
+
+    // Función simple para parsear CSV (asume un formato específico)
+    const parseCSV = (csv) => {
+        const lines = csv.split('\n').slice(1); // Omitir cabecera
+        return lines.map(line => {
+            const [pregunta, opciones, area, respuesta_correcta, explicacion] = line.split(';');
+            return { pregunta, opciones: JSON.parse(opciones), area, respuesta_correcta, explicacion };
+        }).filter(card => card.pregunta); // Filtrar líneas vacías
+    };
+
+    // --- LÓGICA DE VISUALIZACIÓN ---
+    
+    const filterAndDisplayCards = (areaId) => {
+        const areaName = KNOWLEDGE_AREAS[areaId];
+        currentCards = allFlashcards.filter(card => card.area === areaName);
+        currentIndex = 0;
+
+        if (currentCards.length > 0) {
+            areaTitle.textContent = areaName;
+            welcomeMessage.style.display = 'none';
+            flashcardContainer.style.display = 'block';
+            controls.style.display = 'flex';
+            displayCard();
+        } else {
+            areaTitle.textContent = areaName;
+            cardCounter.textContent = 'No hay tarjetas para esta área.';
+            welcomeMessage.style.display = 'flex';
+            welcomeMessage.innerHTML = `<p>Aún no hay preguntas cargadas para el área de <strong>${areaName}</strong>.</p>`;
+            flashcardContainer.style.display = 'none';
+            controls.style.display = 'none';
+        }
+    };
+
+    const displayCard = () => {
+        if (currentIndex < 0 || currentIndex >= currentCards.length) return;
+        
+        // Resetear el estado de la tarjeta
+        flashcard.classList.remove('flipped');
+        
+        const card = currentCards[currentIndex];
+        questionEl.textContent = card.pregunta;
+        correctAnswerEl.textContent = `${card.respuesta_correcta}) ${card.opciones[card.respuesta_correcta]}`;
+        explanationEl.textContent = card.explicacion;
+
+        // Limpiar opciones anteriores y crear nuevas
+        optionsEl.innerHTML = '';
+        for (const key in card.opciones) {
+            const optionDiv = document.createElement('div');
+            optionDiv.classList.add('option');
+            optionDiv.textContent = `${key}) ${card.opciones[key]}`;
+            optionsEl.appendChild(optionDiv);
+        }
+
+        updateCounter();
+    };
+
+    const updateCounter = () => {
+        cardCounter.textContent = `Tarjeta ${currentIndex + 1} de ${currentCards.length}`;
+    };
+
+    // --- MANEJO DE EVENTOS ---
+    
+    flipBtn.addEventListener('click', () => {
+        flashcard.classList.toggle('flipped');
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentIndex < currentCards.length - 1) {
+            currentIndex++;
+            displayCard();
+        }
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            displayCard();
+        }
+    });
+
+    // Iniciar la carga de datos al cargar la página
+    loadFlashcards();
+});
