@@ -3,68 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashcards para Certificación DOP-C02</title>
+    <title>Flashcards de Estudio para DOP-C02</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div id="app-container">
-        <!-- Menú de Navegación Lateral -->
-        <nav class="sidebar">
-            <h2>Áreas de Conocimiento</h2>
-            <ul id="knowledge-areas-menu">
-                <li><a href="index.html?area=1">Automatización del SDLC</a></li>
-                <li><a href="index.html?area=2">Gestión de Configuración e IaC</a></li>
-                <li><a href="index.html?area=3">Soluciones de Nube Resilientes</a></li>
-                <li><a href="index.html?area=4">Monitoreo y Registros</a></li>
-                <li><a href="index.html?area=5">Respuesta a Incidentes y Eventos</a></li>
-                <li><a href="index.html?area=6">Seguridad y Cumplimiento</a></li>
-            </ul>
-        </nav>
+<body class="bg-gray-100 font-sans">
 
-        <!-- Contenido Principal: Flashcards -->
-        <main class="main-content">
-            <h1 id="area-title">Selecciona un área para comenzar</h1>
-            <p id="card-counter"></p>
+    <div class="flex h-screen">
+        <!-- Menú Lateral -->
+        <aside class="w-1/4 bg-white p-6 border-r">
+            <h2 class="text-xl font-bold mb-4 border-b pb-2">Áreas de Conocimiento</h2>
+            <nav>
+                <ul>
+                    <li><a href="?area=1" class="block py-2 px-3 hover:bg-blue-100 rounded">Automatización del SDLC</a></li>
+                    <li><a href="?area=2" class="block py-2 px-3 hover:bg-blue-100 rounded">Gestión de Configuración e IaC</a></li>
+                    <li><a href="?area=3" class="block py-2 px-3 hover:bg-blue-100 rounded">Soluciones de Nube Resilientes</a></li>
+                    <li><a href="?area=4" class="block py-2 px-3 hover:bg-blue-100 rounded">Monitoreo y Registros</a></li>
+                    <li><a href="?area=5" class="block py-2 px-3 hover:bg-blue-100 rounded">Respuesta a Incidentes y Eventos</a></li>
+                    <li><a href="?area=6" class="block py-2 px-3 hover:bg-blue-100 rounded">Seguridad y Cumplimiento</a></li>
+                </ul>
+            </nav>
+        </aside>
 
-            <!-- Contenedor de la Tarjeta y Mensajes -->
-            <div id="flashcard-viewer">
-                <!-- Mensaje inicial o de carga -->
-                <div id="welcome-message" class="card-placeholder">
-                    <p>Por favor, selecciona un área de conocimiento del menú de la derecha para iniciar tu examen de simulación.</p>
-                </div>
-
-                <!-- Contenedor de la tarjeta que rota -->
-                <div class="flashcard-container" id="flashcard-container" style="display: none;">
-                    <div class="flashcard" id="flashcard">
-                        <!-- Cara Frontal (Pregunta y Opciones) -->
-                        <div class="card-face card-front">
-                            <p class="question-text" id="question"></p>
-                            <div class="options" id="options"></div>
-                        </div>
-                        <!-- Cara Trasera (Respuesta y Explicación) -->
-                        <div class="card-face card-back">
-                            <h3 class="answer-title">Respuesta Correcta</h3>
-                            <p class="correct-answer" id="correct-answer"></p>
-                            <h4 class="explanation-title">Explicación</h4>
-                            <p class="explanation-text" id="explanation"></p>
-                        </div>
-                    </div>
-                </div>
+        <!-- Contenido Principal -->
+        <main class="w-3/4 p-8 flex flex-col items-center justify-center">
+            
+            <!-- Mensaje de Bienvenida / Error -->
+            <div id="welcome-message" class="text-center">
+                <h1 class="text-3xl font-bold text-gray-700">¡Bienvenido a tus Flashcards!</h1>
+                <p class="text-gray-500 mt-2">Selecciona un área de conocimiento del menú de la izquierda para comenzar tu examen de simulación.</p>
             </div>
 
-            <!-- Controles de Navegación -->
-            <div class="controls" id="controls" style="display: none;">
-                <button id="prev-btn">Anterior</button>
-                <button id="flip-btn">Mostrar Respuesta</button>
-                <button id="next-btn">Siguiente</button>
+            <!-- Contenedor de la Flashcard -->
+            <div id="flashcard" class="w-full max-w-2xl" style="display: none; perspective: 1000px;">
+                <h1 id="area-title" class="text-2xl font-bold text-center mb-4 text-gray-800"></h1>
+                <div class="relative transition-transform duration-700" style="transform-style: preserve-3d;">
+                    
+                    <!-- Cara Frontal (Pregunta) -->
+                    <div class="front bg-white p-8 rounded-xl shadow-lg border w-full backface-hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-semibold text-blue-600">Pregunta</h2>
+                            <span id="card-counter" class="text-sm font-medium text-gray-500"></span>
+                        </div>
+                        <p id="question-text" class="text-xl text-gray-800 min-h-[100px]"></p>
+                        <div id="options-container" class="mt-6"></div>
+                    </div>
+
+                    <!-- Cara Trasera (Respuesta) -->
+                    <div class="back bg-white p-8 rounded-xl shadow-lg border w-full absolute top-0 left-0" style="transform: rotateY(180deg);">
+                         <h2 class="text-lg font-semibold text-green-600">Respuesta y Explicación</h2>
+                         <div id="answer-container" class="mt-4">
+                            <p id="explanation-text" class="text-gray-700"></p>
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Navegación -->
+                <div class="flex justify-between items-center mt-6">
+                    <button id="prev-button" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">Anterior</button>
+                    <button id="flip-button" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">Mostrar Respuesta</button>
+                    <button id="next-button" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">Siguiente</button>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- Referencia al script JS -->
     <script src="script.js"></script>
 </body>
 </html>
+
