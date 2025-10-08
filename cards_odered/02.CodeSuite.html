@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Tarjetas AWS - Edición Videojuego</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            overflow: hidden; /* Evita el scroll durante las animaciones */
+        }
+        
+        .card-stage {
+            perspective: 1200px;
+            position: relative;
+            min-height: 20rem; /* 320px */
+        }
+
+        .card-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease-in-out;
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* --- Animaciones de Deslizamiento --- */
+        .card-container.hidden-right {
+            transform: translateX(120%) scale(0.8);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .card-container.hidden-left {
+            transform: translateX(-120%) scale(0.8);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            /* Transición con efecto de rebote (elástico) */
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card-face-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Colores y estilos de AWS */
+        .bg-aws-orange { background-color: #FF9900; }
+        .bg-aws-dark { background-color: #232F3E; }
+
+        /* Estilo para los botones interactivos */
+        .nav-button {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .nav-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(255, 153, 0, 0.4);
+        }
+        .nav-button:active {
+            transform: scale(0.95);
+        }
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: scale(1);
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800 flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-2xl mx-auto">
+        <header class="text-center mb-6">
+            <h1 class="text-4xl md:text-5xl font-bold text-aws-dark">Flashcards de AWS CodeSuite</h1>
+            <p class="text-lg text-gray-600 mt-2">Navega con los botones y haz clic en la tarjeta.</p>
+        </header>
+
+        <!-- Escenario donde aparecen las tarjetas -->
+        <div class="card-stage mb-6">
+            <!-- Las tarjetas se insertarán aquí con JS -->
+        </div>
+
+        <!-- Navegación y contador -->
+        <div class="flex items-center justify-center space-x-8">
+            <button id="prev-btn" class="nav-button bg-aws-dark text-white rounded-full w-14 h-14 flex items-center justify-center text-3xl font-bold">&lt;</button>
+            <div id="card-counter" class="text-xl font-semibold text-gray-700 w-20 text-center">1 / 6</div>
+            <button id="next-btn" class="nav-button bg-aws-dark text-white rounded-full w-14 h-14 flex items-center justify-center text-3xl font-bold">&gt;</button>
+        </div>
+    </div>
+
+    <script>
+        const cardData = [
+            { question: '¿Qué es AWS CodeCommit?', answer: 'Es un servicio de control de código fuente (Git). <br><br><strong>Analogía:</strong> Es el "armario" o "caja fuerte" donde guardas todo tu código de forma segura en la nube de AWS. Es la versión de AWS de GitHub o GitLab.' },
+            { question: '¿Para qué sirve AWS CodeBuild?', answer: 'Compila el código, ejecuta pruebas y crea paquetes de software listos para desplegar. <br><br><strong>Analogía:</strong> Es el "chef" o el "robot de ensamblaje". Toma los ingredientes (código) y los transforma en el platillo final (la aplicación lista para usarse).' },
+            { question: '¿Qué hace AWS CodeDeploy?', answer: 'Automatiza el despliegue de aplicaciones en servidores, contenedores o funciones Lambda. <br><br><strong>Analogía:</strong> Es el "equipo de reparto" o el "servicio de mensajería". Entrega tu aplicación terminada a su destino final de forma rápida y segura.' },
+            { question: '¿Qué es AWS CodePipeline?', answer: 'Orquesta y automatiza todo el proceso de entrega de software (CI/CD). <br><br><strong>Analogía:</strong> Es el "director de orquesta". Se asegura de que CodeCommit, CodeBuild y CodeDeploy trabajen juntos en perfecta armonía para lanzar tu software.' },
+            { question: '¿Qué es la "CodeSuite" de AWS?', answer: 'Es el conjunto de las cuatro herramientas (CodeCommit, CodeBuild, CodeDeploy, CodePipeline) que forman el núcleo de DevOps en AWS. <br><br><strong>Analogía:</strong> Es la "caja de herramientas" completa para construir y entregar software automáticamente en AWS.' },
+            { question: '¿Qué problema resuelve la CodeSuite?', answer: 'Automatiza el proceso de CI/CD (Integración Continua y Entrega Continua), permitiendo a los desarrolladores lanzar nuevas versiones de software de forma más rápida y fiable. <br><br><strong>Analogía:</strong> Transforma un proceso manual y lento en una "línea de producción" automática.' },
+        ];
+
+        const stage = document.querySelector('.card-stage');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const counter = document.getElementById('card-counter');
+
+        let currentIndex = 0;
+        let cardElements = [];
+
+        // Crear todas las tarjetas al inicio
+        function createCards() {
+            stage.innerHTML = '';
+            cardElements = cardData.map((data, index) => {
+                const container = document.createElement('div');
+                container.className = 'card-container';
+                if (index > 0) {
+                    container.classList.add('hidden-right');
+                }
+                
+                container.innerHTML = `
+                    <div class="card w-full h-full">
+                        <div class="card-face card-face-front bg-aws-orange text-white">
+                            <h3 class="text-2xl font-bold text-center">${data.question}</h3>
+                        </div>
+                        <div class="card-face card-face-back bg-aws-dark text-white">
+                            <h4 class="text-xl font-semibold mb-2">Respuesta:</h4>
+                            <p class="text-center">${data.answer}</p>
+                        </div>
+                    </div>
+                `;
+                
+                const card = container.querySelector('.card');
+                card.addEventListener('click', () => {
+                    card.classList.toggle('is-flipped');
+                });
+
+                stage.appendChild(container);
+                return container;
+            });
+            updateCounter();
+            updateNavButtons();
+        }
+
+        function updateCounter() {
+            counter.textContent = `${currentIndex + 1} / ${cardData.length}`;
+        }
+        
+        function updateNavButtons() {
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === cardData.length - 1;
+        }
+
+        function showCard(index, direction) {
+            // Voltear tarjeta actual si está girada
+            const currentCard = cardElements[currentIndex].querySelector('.card');
+            if(currentCard.classList.contains('is-flipped')){
+                currentCard.classList.remove('is-flipped');
+            }
+
+            // Ocultar la tarjeta actual deslizándola
+            const oldCard = cardElements[currentIndex];
+            oldCard.classList.add(direction === 'next' ? 'hidden-left' : 'hidden-right');
+
+            // Mostrar la nueva tarjeta
+            currentIndex = index;
+            const newCard = cardElements[currentIndex];
+            newCard.classList.remove('hidden-left', 'hidden-right');
+            
+            updateCounter();
+            updateNavButtons();
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < cardData.length - 1) {
+                showCard(currentIndex + 1, 'next');
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                showCard(currentIndex - 1, 'prev');
+            }
+        });
+
+        // Iniciar el juego
+        createCards();
+    </script>
+</body>
+</html>
