@@ -18,9 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
             ]
         },
         {
-            folder: 'Guías de Usuario',
+            folder: 'Flash Cards',
             files: [
-                { name: 'Guía de Inicio', path: 'guias/inicio.html' }
+                { name: 'Filosofia y Servicios', path: 'Flash Cards/01.Filosofia_Servicios.html' }
+                { name: 'Filosofia y Servicios', path: 'Flash Cards/02.CodeSuite.html' }
             ]
         }
     ];
@@ -63,7 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     /**
-     * Carga el contenido de un archivo HTML y ejecuta sus scripts de forma segura.
+     * Carga el contenido de un archivo HTML en el área principal.
+     * Esta es la versión estática que solo muestra el HTML.
      */
     function loadContent(path) {
          fetch(path)
@@ -74,33 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return response.text();
             })
             .then(html => {
-                // Limpiamos los scripts que fueron inyectados en la carga anterior para evitar conflictos.
-                const oldInjectedScripts = document.querySelectorAll('script[data-injected="true"]');
-                oldInjectedScripts.forEach(s => s.remove());
-
-                // 1. Inyectamos el HTML en el área de contenido principal.
                 mainContent.innerHTML = html;
-
-                // 2. Buscamos los scripts dentro del contenido recién inyectado.
-                const scripts = mainContent.querySelectorAll("script");
-                
-                // 3. Ejecutamos cada script de una manera que el navegador no bloquee.
-                scripts.forEach(script => {
-                    // Creamos un nuevo elemento script
-                    const newScript = document.createElement("script");
-                    
-                    // Copiamos el contenido del script original al nuevo.
-                    newScript.textContent = script.textContent;
-                    
-                    // Marcamos este script para poder encontrarlo y limpiarlo en la siguiente carga.
-                    newScript.setAttribute('data-injected', 'true');
-                    
-                    // Añadimos el nuevo script al final del body. Esto fuerza al navegador a ejecutarlo.
-                    document.body.appendChild(newScript);
-
-                    // Eliminamos el script original del área de contenido, ya que no se ejecutará ahí.
-                    script.remove();
-                });
             })
             .catch(error => {
                 console.error('Error al cargar la página:', error);
