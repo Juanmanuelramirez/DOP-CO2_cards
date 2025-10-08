@@ -1,32 +1,97 @@
-/* Estilos para el efecto de volteo de la tarjeta */
-.flipped {
-    transform: rotateY(180deg);
+.menu-link {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    color: #475569;
+    transition: all 0.2s ease-in-out;
 }
 
-.backface-hidden {
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden; /* Para compatibilidad con Safari */
+.menu-link:hover {
+    background-color: #dbeafe;
+    color: #2563eb;
 }
 
-/* El contenedor relativo es el que gira */
-.relative {
-    transition: transform 0.7s;
+.menu-link.active {
+    background-color: #bfdbfe;
+    color: #1d4ed8;
+    font-weight: 700;
+}
+
+/* --- Estilos de la Tarjeta y Animación --- */
+
+#flashcard {
+    min-height: 450px; /* Altura mínima para evitar saltos de contenido */
+}
+
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s;
     transform-style: preserve-3d;
 }
 
-/* Ambas caras ocupan el mismo espacio y ocultan su reverso */
-.front, .back {
+.card-face {
     position: absolute;
     width: 100%;
     height: 100%;
-    top: 0;
-    left: 0;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e5e7eb;
+    background-color: white;
     backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    -webkit-backface-visibility: hidden; /* Para Safari */
 }
 
-/* La cara trasera está pre-rotada */
-.back {
+.card-back {
     transform: rotateY(180deg);
+}
+
+.card-inner.flipped {
+    transform: rotateY(180deg);
+}
+
+/* --- Estilos de las Opciones --- */
+.option-btn {
+    width: 100%;
+    text-align: left;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background-color: #f9fafb;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.option-btn:not([disabled]):hover {
+    border-color: #93c5fd;
+    background-color: #eff6ff;
+}
+
+.option-btn.correct {
+    background-color: #dcfce7;
+    border-color: #4ade80;
+    color: #166534;
+}
+
+.option-btn.incorrect {
+    background-color: #fee2e2;
+    border-color: #f87171;
+    color: #991b1b;
+}
+
+.option-btn.correct::after {
+    content: '✔';
+    float: right;
+    font-weight: bold;
+}
+
+.option-btn.incorrect::after {
+    content: '✖';
+    float: right;
+    font-weight: bold;
 }
 
