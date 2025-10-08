@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pregunta: "In an AWS CodePipeline, what is the primary purpose of a 'manual approval' action? / En un AWS CodePipeline, ¿cuál es el propósito principal de una acción de 'aprobación manual'?",
             opciones: ["To inject environment variables / Para inyectar variables de entorno", "To pause the pipeline until someone manually approves it / Para pausar el pipeline hasta que alguien lo apruebe manualmente", "To trigger a Lambda function for validation / Para disparar una función Lambda de validación", "To publish artifacts to an S3 bucket / Para publicar artefactos en un bucket de S3"],
             area: 1,
-            respuesta_correcta: "To pause the pipeline until someone manually approves it / Para pausar el pipeline hasta que alguien lo apruebe manually",
+            respuesta_correcta: "To pause the pipeline until someone manually approves it / Para pausar el pipeline hasta que alguien lo apruebe manualmente",
             explicacion: "A manual approval action stops the pipeline and waits for a user with the required IAM permissions to approve or reject the action before the pipeline can continue. This is often used before deploying to production. / Una acción de aprobación manual detiene el pipeline y espera a que un usuario con los permisos IAM necesarios apruebe o rechace la acción para que el pipeline pueda continuar. Se usa a menudo antes de desplegar a producción."
         },
         // ... (Se agregarán 18 preguntas más para el área 1)
@@ -113,17 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentIndex = 0;
     let score = 0;
     let currentArea = null;
-    let currentLanguage = 'es'; // Idioma por defecto
+    let currentLanguage = 'es';
 
     // --- FUNCIONES DE IDIOMA ---
-    function setLanguage(lang) {
-        currentLanguage = lang;
-        langOverlay.classList.add('hidden');
-        appContainer.classList.remove('hidden');
-        translateUI();
-        initialize();
-    }
-
     function translateUI() {
         document.querySelectorAll('[data-key]').forEach(el => {
             const key = el.dataset.key;
@@ -143,12 +135,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function startGame(area) {
         currentArea = area;
         currentFlashcards = allFlashcards.filter(card => card.area.toString() === area);
-        const areaName = uiText[currentLanguage][`area_${area}`];
+        const areaName = parseBilingual(uiText.en[`area_${area}`] + ' / ' + uiText.es[`area_${area}`]);
         
         if (currentFlashcards.length === 0) {
+            const title = parseBilingual(uiText.en.proximamente_title + ' / ' + uiText.es.proximamente_title);
+            const subtitle = parseBilingual(uiText.en.proximamente_subtitle + ' / ' + uiText.es.proximamente_subtitle).replace('{area}', areaName);
             welcomeMessage.innerHTML = `<div class="text-center">
-                <h2 class="text-2xl font-bold mb-2">${uiText[currentLanguage].proximamente_title}</h2>
-                <p class="text-gray-600">${uiText[currentLanguage].proximamente_subtitle.replace('{area}', areaName)}</p>
+                <h2 class="text-2xl font-bold mb-2">${title}</h2>
+                <p class="text-gray-600">${subtitle}</p>
             </div>`;
             welcomeMessage.classList.remove('hidden');
             gameContainer.classList.add('hidden');
@@ -177,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = currentFlashcards[currentIndex];
             questionText.textContent = parseBilingual(card.pregunta);
             cardCounter.textContent = `${currentIndex + 1} / ${currentFlashcards.length}`;
-            areaTitle.textContent = uiText[currentLanguage][`area_${currentArea}`];
+            areaTitle.textContent = parseBilingual(uiText.en[`area_${currentArea}`] + ' / ' + uiText.es[`area_${currentArea}`]);
             
             optionsContainer.innerHTML = '';
             card.opciones.forEach(opcion => {
@@ -200,10 +194,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isCorrect) {
             score += 10;
             button.classList.add('correct');
-            feedbackHeader.innerHTML = `<h2 class="text-2xl font-bold text-green-600">${uiText[currentLanguage].feedback_correcto}</h2>`;
+            feedbackHeader.innerHTML = `<h2 class="text-2xl font-bold text-green-600">${parseBilingual(uiText.en.feedback_correcto + ' / ' + uiText.es.feedback_correcto)}</h2>`;
         } else {
             button.classList.add('incorrect');
-            feedbackHeader.innerHTML = `<h2 class="text-2xl font-bold text-red-600">${uiText[currentLanguage].feedback_incorrecto}</h2>`;
+            feedbackHeader.innerHTML = `<h2 class="text-2xl font-bold text-red-600">${parseBilingual(uiText.en.feedback_incorrecto + ' / ' + uiText.es.feedback_incorrecto)}</h2>`;
         }
 
         updateScore();
@@ -253,15 +247,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function initialize() {
+    // --- INICIALIZACIÓN DE LA APP ---
+
+    // Esta función principal se llama DESPUÉS de seleccionar un idioma.
+    function setupAndStartApp(lang) {
+        currentLanguage = lang;
+        
+        // Ocultar overlay, mostrar app y traducir la UI estática
+        langOverlay.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        translateUI();
+        
+        // Cargar los datos de las flashcards
         allFlashcards = flashcardData.map(row => ({ ...row }));
         
-        // Asigna eventos a los links del menú
+        // Asignar eventos a los elementos del juego
         areaMenu.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
-                const area = e.target.dataset.area;
-                startGame(area);
+                startGame(e.target.dataset.area);
             });
         });
 
@@ -270,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(currentArea) startGame(currentArea);
         });
         
+        // Comprobar si se debe iniciar un juego desde la URL
         const urlParams = new URLSearchParams(window.location.search);
         const area = urlParams.get('area');
         if (area) {
@@ -281,8 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Iniciar la app después de seleccionar idioma
-    langEnButton.addEventListener('click', () => setLanguage('en'));
-    langEsButton.addEventListener('click', () => setLanguage('es'));
+    // Configurar los botones de idioma para que inicien la aplicación
+    langEnButton.addEventListener('click', () => setupAndStartApp('en'));
+    langEsButton.addEventListener('click', () => setupAndStartApp('es'));
 });
 
