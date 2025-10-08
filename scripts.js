@@ -39,10 +39,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar y procesar el archivo CSV
     const loadFlashcards = async () => {
         try {
-            const response = await fetch('./flashcards.csv');
+            // --- SOLUCIÓN DEFINITIVA ---
+            // Se usa la URL directa al archivo "raw" en GitHub para evitar
+            // el problema de despliegue de GitHub Pages.
+            const fileUrl = 'https://raw.githubusercontent.com/Juanmanuelramirez/DOP-CO2_cards/main/flashcards.csv';
+            const response = await fetch(fileUrl);
+            
             if (!response.ok) {
                 // Si la respuesta no es OK (ej. 404), lanzamos un error claro
-                throw new Error(`Error de red: No se encontró el archivo (código ${response.status})`);
+                throw new Error(`Error de red: No se encontró el archivo en la URL (código ${response.status})`);
             }
             const csvData = await response.text();
             allFlashcards = parseCSV(csvData);
