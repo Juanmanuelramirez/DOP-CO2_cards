@@ -30,20 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('toggle-btn');
     
-    // --- LÓGICA AUTOMÁTICA PARA DETECTAR LA RUTA BASE ---
-    // Esto hace que funcione tanto localmente como en GitHub Pages sin cambios.
-    let basePath = '';
-    if (window.location.hostname.endsWith('github.io')) {
-        // Para GitHub Pages, la ruta debe empezar con el nombre del repositorio.
-        // Ejemplo: /DOP-CO2_cards/
-        const pathParts = window.location.pathname.split('/');
-        if (pathParts.length > 1 && pathParts[1]) {
-            basePath = `/${pathParts[1]}`;
-        }
-    }
-    // --- FIN DE LA LÓGICA AUTOMÁTICA ---
-
-
     /**
      * Genera el menú HTML en la barra lateral a partir de la estructura definida.
      */
@@ -80,13 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
      * Carga el contenido de un archivo HTML en el área principal.
      */
     function loadContent(path) {
-         // Se construye la ruta completa usando la base detectada automáticamente.
-         const fullPath = `${basePath}/${path}`;
-
-         fetch(fullPath)
+         // Se usa la ruta relativa directamente. Esto es más simple y robusto.
+         fetch(path)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`Error HTTP ${response.status} - No se pudo encontrar el archivo en: ${fullPath}`);
+                    throw new Error(`Error HTTP ${response.status} - No se pudo encontrar el archivo en: ${path}`);
                 }
                 return response.text();
             })
@@ -119,7 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
         mainContent.classList.toggle('ml-64');
     });
 
-    // Generar el menú inicial al cargar la página.
+    // --- INICIALIZACIÓN ---
+    // 1. Generar el menú.
     generateMenu();
+    
+    // 2. Cargar la primera página por defecto para que no se vea vacío.
+    if (fileStructure.length > 0 && fileStructure[0].files.length > 0) {
+        loadContent(fileStructure[0].files[0].path);
+    }
 });
 
