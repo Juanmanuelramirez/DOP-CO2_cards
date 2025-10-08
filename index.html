@@ -16,7 +16,6 @@
 <body class="bg-gray-100 font-sans">
 
     <!-- BOTÓN PARA MOSTRAR/OCULTAR EL MENÚ -->
-    <!-- Se posiciona de forma fija y aparece sobre el resto del contenido -->
     <button id="toggle-btn" class="fixed top-4 left-4 z-30 bg-white p-2 rounded-md shadow-lg border border-gray-200">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -26,24 +25,22 @@
     </button>
 
     <!-- BARRA LATERAL (SIDEBAR) -->
-    <!-- El menú se genera aquí con JavaScript -->
-    <aside id="sidebar" class="bg-white text-gray-800 w-64 h-full fixed top-0 left-0 z-20 shadow-xl p-6 transform translate-x-0">
+    <aside id="sidebar" class="bg-white text-gray-800 w-64 h-full fixed top-0 left-0 z-20 shadow-xl p-6 transform translate-x-0 overflow-y-auto">
         <h1 class="text-2xl font-bold mb-6 border-b pb-4">Menú del Sitio</h1>
         <nav id="menu-container">
-            <!-- El contenido del menú se insertará aquí -->
+            <!-- El menú se generará aquí automáticamente desde el script -->
         </nav>
     </aside>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <!-- El contenido de los archivos HTML se cargará aquí -->
     <main id="main-content" class="ml-64 p-8">
         <div class="bg-white p-8 rounded-lg shadow-md">
             <h2 class="text-3xl font-bold mb-4">Bienvenido</h2>
             <p class="text-gray-600">
-                Selecciona una opción del menú de la izquierda para cargar el contenido. Si el menú te estorba, puedes ocultarlo con el botón de la esquina superior izquierda.
+                Selecciona una opción del menú de la izquierda para cargar el contenido.
             </p>
-            <p class="mt-4 text-sm text-gray-500">
-                Este es el contenido por defecto de <code>sidebar.html</code>.
+             <p class="mt-4 text-sm text-gray-500">
+                <b>Nota importante:</b> Por razones de seguridad, el navegador no puede leer las carpetas de tu computadora. Debes listar tus archivos en la sección `fileStructure` dentro del script de esta página para que el menú se genere automáticamente.
             </p>
         </div>
     </main>
@@ -51,19 +48,25 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            // --- PASO 1: Define tu estructura de carpetas y archivos aquí ---
-            // Simula la lectura de subcarpetas y archivos HTML.
-            // Modifica este objeto para que coincida con tu proyecto.
+            // =======================================================================
+            // ¡IMPORTANTE! - DEFINE AQUÍ LA ESTRUCTURA DE TU SITIO
+            // =======================================================================
+            // JavaScript no puede "leer" tus carpetas directamente por seguridad.
+            // Por lo tanto, debes listar tus carpetas y archivos HTML en este arreglo.
+            // El resto del script es DINÁMICO y generará el menú a partir de esta lista.
+            //
+            // Para actualizar tu menú, solo tienes que añadir o quitar elementos aquí.
+            // =======================================================================
             const fileStructure = [
                 {
-                    folder: 'Introduccion',
+                    folder: 'Introducción',
                     files: [
                         { name: 'Bienvenida', path: 'introduccion/bienvenida.html' },
                         { name: 'Acerca de', path: 'introduccion/acerca.html' }
                     ]
                 },
                 {
-                    folder: 'Guias',
+                    folder: 'Guías de Usuario',
                     files: [
                         { name: 'Guía de Inicio', path: 'guias/inicio.html' },
                         { name: 'Guía Avanzada', path: 'guias/avanzada.html' }
@@ -82,71 +85,75 @@
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('toggle-btn');
 
-            // --- PASO 2: Generar el menú dinámicamente ---
-            fileStructure.forEach(item => {
-                // Crea el título de la carpeta
-                const folderTitle = document.createElement('h3');
-                folderTitle.className = 'text-lg font-semibold text-gray-500 mt-6 mb-2';
-                folderTitle.textContent = item.folder;
-                menuContainer.appendChild(folderTitle);
+            // --- ESTA PARTE ES COMPLETAMENTE DINÁMICA ---
+            // Genera el menú HTML a partir de la estructura definida arriba.
+            // No necesitas tocar nada de aquí en adelante.
+            function generateMenu() {
+                menuContainer.innerHTML = ''; // Limpiamos el menú por si acaso
+                fileStructure.forEach(item => {
+                    const folderTitle = document.createElement('h3');
+                    folderTitle.className = 'text-lg font-semibold text-gray-500 mt-6 mb-2 uppercase tracking-wider';
+                    folderTitle.textContent = item.folder;
+                    menuContainer.appendChild(folderTitle);
 
-                // Crea la lista de enlaces para los archivos de esa carpeta
-                const fileList = document.createElement('ul');
-                fileList.className = 'space-y-2';
-                item.files.forEach(file => {
-                    const listItem = document.createElement('li');
-                    const link = document.createElement('a');
-                    link.href = '#';
-                    link.textContent = file.name;
-                    link.dataset.path = file.path; // Usamos un atributo data-* para guardar la ruta
-                    link.className = 'block text-gray-700 hover:bg-gray-200 hover:text-black rounded-md p-2 transition-colors';
-                    listItem.appendChild(link);
-                    fileList.appendChild(listItem);
+                    const fileList = document.createElement('ul');
+                    fileList.className = 'space-y-1';
+                    item.files.forEach(file => {
+                        const listItem = document.createElement('li');
+                        const link = document.createElement('a');
+                        link.href = '#';
+                        link.textContent = file.name;
+                        link.dataset.path = file.path;
+                        link.className = 'block text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md p-2 transition-colors duration-200';
+                        listItem.appendChild(link);
+                        fileList.appendChild(listItem);
+                    });
+                    menuContainer.appendChild(fileList);
                 });
-                menuContainer.appendChild(fileList);
-            });
+            }
+            
+            // Función para cargar contenido dinámicamente
+            function loadContent(path) {
+                 fetch(path)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Error HTTP ${response.status} - No se pudo encontrar el archivo: ${path}`);
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        mainContent.innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error('Error al cargar la página:', error);
+                        mainContent.innerHTML = `
+                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-6 rounded-lg shadow-md" role="alert">
+                                <h2 class="font-bold text-xl mb-2">Error al Cargar Contenido</h2>
+                                <p>${error.message}</p>
+                                <p class="mt-2 text-sm">Asegúrate de que la ruta en 'fileStructure' sea correcta y el archivo exista.</p>
+                            </div>
+                        `;
+                    });
+            }
 
-            // --- PASO 3: Cargar contenido al hacer clic en un enlace ---
+            // Event listener para los clics en el menú
             menuContainer.addEventListener('click', (event) => {
-                // Verificamos que se hizo clic en un enlace con la ruta de un archivo
                 if (event.target.tagName === 'A' && event.target.dataset.path) {
-                    event.preventDefault(); // Evitamos que el navegador navegue
-                    const path = event.target.dataset.path;
-                    
-                    // Usamos fetch para cargar el contenido del archivo HTML
-                    fetch(path)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status} - No se pudo encontrar ${path}`);
-                            }
-                            return response.text();
-                        })
-                        .then(html => {
-                            mainContent.innerHTML = html; // Inyectamos el HTML en el contenedor principal
-                        })
-                        .catch(error => {
-                            console.error('Error al cargar la página:', error);
-                            mainContent.innerHTML = `
-                                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-md" role="alert">
-                                    <h2 class="font-bold text-xl">Error al cargar el contenido</h2>
-                                    <p>${error.message}</p>
-                                    <p class="mt-2">Asegúrate de que el archivo exista en la ruta correcta y de que el servidor esté funcionando.</p>
-                                </div>
-                            `;
-                        });
+                    event.preventDefault();
+                    loadContent(event.target.dataset.path);
                 }
             });
 
-            // --- PASO 4: Funcionalidad para ocultar/mostrar la barra lateral ---
+            // Funcionalidad para ocultar/mostrar la barra lateral
             toggleBtn.addEventListener('click', () => {
                 sidebar.classList.toggle('-translate-x-full');
-                if (sidebar.classList.contains('-translate-x-full')) {
-                    mainContent.classList.remove('ml-64');
-                } else {
-                    mainContent.classList.add('ml-64');
-                }
+                mainContent.classList.toggle('ml-64');
             });
+
+            // Generar el menú inicial al cargar la página
+            generateMenu();
         });
     </script>
 </body>
 </html>
+
