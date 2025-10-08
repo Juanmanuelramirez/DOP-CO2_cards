@@ -3,216 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego de Tarjetas AWS - Edición Videojuego</title>
+    <title>Juego de Tarjetas Didácticas: DevOps en AWS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
-        
+        :root {
+            --aws-orange: #FF9900;
+            --aws-dark-charcoal: #232F3E;
+            --text-dark: #202124;
+            --text-light: #5f6368;
+            --bg-light: #f8f9fa;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-            overflow: hidden; /* Evita el scroll durante las animaciones */
-        }
-        
-        .card-stage {
-            perspective: 1200px;
-            position: relative;
-            min-height: 20rem; /* 320px */
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            overflow: hidden; /* Evita scrollbars durante animaciones */
         }
 
+        /* --- Animación de volteo con efecto "rebote" --- */
         .card-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease-in-out;
-            transform: scale(1);
-            opacity: 1;
+            perspective: 1500px;
         }
-
-        /* --- Animaciones de Deslizamiento --- */
-        .card-container.hidden-right {
-            transform: translateX(120%) scale(0.8);
-            opacity: 0;
-            pointer-events: none;
-        }
-        .card-container.hidden-left {
-            transform: translateX(-120%) scale(0.8);
-            opacity: 0;
-            pointer-events: none;
-        }
-
-
-        .card {
+        .card-inner {
             position: relative;
             width: 100%;
             height: 100%;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Curva para efecto rebote */
             transform-style: preserve-3d;
-            /* Transición con efecto de rebote (elástico) */
-            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            cursor: pointer;
         }
-
-        .card.is-flipped {
+        .card-container.is-flipped .card-inner {
             transform: rotateY(180deg);
         }
-
         .card-face {
             position: absolute;
             width: 100%;
             height: 100%;
+            -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
+            justify-content: center;
+            flex-direction: column;
+            padding: 2rem;
             border-radius: 16px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(32,33,36,.2);
+            border: 1px solid #d2d2d2;
+            background-color: white;
         }
         
-        .card-face-back {
+        .card-front {
+            justify-content: space-between;
+            padding-top: 1.5rem;
+            padding-bottom: 2.5rem;
+        }
+
+        .card-back {
             transform: rotateY(180deg);
         }
+        
+        .aws-logo {
+            width: 80px;
+            height: auto;
+        }
 
-        /* Colores y estilos de AWS */
-        .bg-aws-orange { background-color: #FF9900; }
-        .bg-aws-dark { background-color: #232F3E; }
+        /* --- Animaciones de deslizamiento para cambio de tarjeta --- */
+        @keyframes slideOutLeft {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(-150%); opacity: 0; }
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(150%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(150%); opacity: 0; }
+        }
+        @keyframes slideInLeft {
+            from { transform: translateX(-150%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
 
-        /* Estilo para los botones interactivos */
-        .nav-button {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        .slide-out-left { animation: slideOutLeft 0.4s forwards cubic-bezier(0.47, 0, 0.745, 0.715); }
+        .slide-in-right { animation: slideInRight 0.4s forwards cubic-bezier(0.39, 0.575, 0.565, 1); }
+        .slide-out-right { animation: slideOutRight 0.4s forwards cubic-bezier(0.47, 0, 0.745, 0.715); }
+        .slide-in-left { animation: slideInLeft 0.4s forwards cubic-bezier(0.39, 0.575, 0.565, 1); }
+        
+        /* --- Botones interactivos --- */
+        .btn {
+            transition: all 0.2s ease-in-out;
         }
-        .nav-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 5px 15px rgba(255, 153, 0, 0.4);
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
-        .nav-button:active {
-            transform: scale(0.95);
-        }
-        .nav-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: scale(1);
-            box-shadow: none;
+        .btn:active:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
     </style>
 </head>
-<body class="bg-white text-gray-800 flex flex-col items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="w-full max-w-2xl mx-auto">
-        <header class="text-center mb-6">
-            <h1 class="text-4xl md:text-5xl font-bold text-aws-dark">Flashcards de AWS CodeSuite</h1>
-            <p class="text-lg text-gray-600 mt-2">Navega con los botones y haz clic en la tarjeta.</p>
-        </header>
-
-        <!-- Escenario donde aparecen las tarjetas -->
-        <div class="card-stage mb-6">
-            <!-- Las tarjetas se insertarán aquí con JS -->
+    <main class="w-full max-w-2xl mx-auto flex flex-col items-center space-y-6">
+        <!-- Título -->
+        <div class="text-center">
+            <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-[var(--aws-dark-charcoal)]">DevOps en AWS</h1>
+            <p class="text-gray-600 mt-2 text-lg">Pon a prueba tu conocimiento.</p>
         </div>
 
-        <!-- Navegación y contador -->
-        <div class="flex items-center justify-center space-x-8">
-            <button id="prev-btn" class="nav-button bg-aws-dark text-white rounded-full w-14 h-14 flex items-center justify-center text-3xl font-bold">&lt;</button>
-            <div id="card-counter" class="text-xl font-semibold text-gray-700 w-20 text-center">1 / 6</div>
-            <button id="next-btn" class="nav-button bg-aws-dark text-white rounded-full w-14 h-14 flex items-center justify-center text-3xl font-bold">&gt;</button>
+        <!-- Barra de Progreso -->
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+            <div id="progressBar" class="bg-[var(--aws-orange)] h-2.5 rounded-full transition-all duration-500 ease-out"></div>
         </div>
-    </div>
+
+        <!-- Contenedor de la Tarjeta (para animaciones de deslizamiento) -->
+        <div id="card-wrapper" class="w-full h-80 sm:h-96">
+            <div id="card" class="card-container w-full h-full cursor-pointer">
+                <div class="card-inner">
+                    <div class="card-face card-front">
+                        <!-- Logo de AWS Corregido -->
+                        <img class="aws-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Amazon_Web_Services_Logo.svg/1280px-Amazon_Web_Services_Logo.svg.png" viewBox="0 0 128 128">
+                        <p class="text-xl sm:text-2xl font-medium text-center"></p>
+                    </div>
+                    <div class="card-face card-back">
+                        <p class="text-lg sm:text-xl text-center text-gray-700 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Indicador de Progreso (Texto) -->
+        <div id="progressText" class="text-gray-500 font-medium tracking-wider">Tarjeta 1 / 25</div>
+
+        <!-- Controles de Navegación -->
+        <div class="flex items-center justify-center w-full space-x-4">
+            <button id="prevBtn" class="btn bg-white text-gray-700 font-medium py-3 px-6 rounded-lg shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                Anterior
+            </button>
+            <button id="flipBtn" class="btn bg-[var(--aws-orange)] text-white font-bold py-3 px-8 rounded-lg shadow-lg">
+                Voltear
+            </button>
+            <button id="nextBtn" class="btn bg-white text-gray-700 font-medium py-3 px-6 rounded-lg shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                Siguiente
+            </button>
+        </div>
+    </main>
 
     <script>
-        const cardData = [
-            { question: '¿Qué es AWS CodeCommit?', answer: 'Es un servicio de control de código fuente (Git). <br><br><strong>Analogía:</strong> Es el "armario" o "caja fuerte" donde guardas todo tu código de forma segura en la nube de AWS. Es la versión de AWS de GitHub o GitLab.' },
-            { question: '¿Para qué sirve AWS CodeBuild?', answer: 'Compila el código, ejecuta pruebas y crea paquetes de software listos para desplegar. <br><br><strong>Analogía:</strong> Es el "chef" o el "robot de ensamblaje". Toma los ingredientes (código) y los transforma en el platillo final (la aplicación lista para usarse).' },
-            { question: '¿Qué hace AWS CodeDeploy?', answer: 'Automatiza el despliegue de aplicaciones en servidores, contenedores o funciones Lambda. <br><br><strong>Analogía:</strong> Es el "equipo de reparto" o el "servicio de mensajería". Entrega tu aplicación terminada a su destino final de forma rápida y segura.' },
-            { question: '¿Qué es AWS CodePipeline?', answer: 'Orquesta y automatiza todo el proceso de entrega de software (CI/CD). <br><br><strong>Analogía:</strong> Es el "director de orquesta". Se asegura de que CodeCommit, CodeBuild y CodeDeploy trabajen juntos en perfecta armonía para lanzar tu software.' },
-            { question: '¿Qué es la "CodeSuite" de AWS?', answer: 'Es el conjunto de las cuatro herramientas (CodeCommit, CodeBuild, CodeDeploy, CodePipeline) que forman el núcleo de DevOps en AWS. <br><br><strong>Analogía:</strong> Es la "caja de herramientas" completa para construir y entregar software automáticamente en AWS.' },
-            { question: '¿Qué problema resuelve la CodeSuite?', answer: 'Automatiza el proceso de CI/CD (Integración Continua y Entrega Continua), permitiendo a los desarrolladores lanzar nuevas versiones de software de forma más rápida y fiable. <br><br><strong>Analogía:</strong> Transforma un proceso manual y lento en una "línea de producción" automática.' },
-        ];
+        document.addEventListener('DOMContentLoaded', () => {
+            const flashcards = [
+                { "front": "¿Cuál es la filosofía principal de DevOps?", "back": "Un conjunto de prácticas para mejorar la capacidad de una organización de entregar aplicaciones y servicios a alta velocidad, uniendo desarrollo (Dev) y operaciones (Ops)." },
+                { "front": "¿Cuál es el acrónimo de los principios clave de DevOps?", "back": "CAMS: Cultura, Automatización, Medición y Compartir (Sharing)." },
+                { "front": "¿En qué consiste el pilar 'Cultura' en CAMS?", "back": "Fomentar la colaboración, la responsabilidad compartida y romper los silos entre los equipos de desarrollo y operaciones." },
+                { "front": "¿Qué implica el pilar 'Automatización' en CAMS?", "back": "Utilizar la tecnología para automatizar procesos manuales y repetitivos en el ciclo de vida del software, desde la compilación hasta el despliegue." },
+                { "front": "¿Cuál es el objetivo del pilar 'Medición' en CAMS?", "back": "Recopilar datos y métricas sobre el rendimiento de las aplicaciones y la infraestructura para obtener retroalimentación y tomar decisiones informadas." },
+                { "front": "¿Qué promueve el pilar 'Compartir' (Sharing) en CAMS?", "back": "La distribución de conocimientos, herramientas y mejores prácticas en toda la organización para mejorar la eficiencia colectiva." },
+                { "front": "¿Qué significan las siglas CI/CD?", "back": "Integración Continua (Continuous Integration) y Entrega Continua (Continuous Delivery) o Despliegue Continuo (Continuous Deployment)." },
+                { "front": "¿Qué servicio de AWS se utiliza para orquestar un pipeline de CI/CD?", "back": "AWS CodePipeline: Automatiza las fases de compilación, prueba y despliegue del proceso de lanzamiento de software." },
+                { "front": "¿Qué servicio de AWS compila el código y ejecuta pruebas?", "back": "AWS CodeBuild: Compila el código fuente, ejecuta pruebas y produce paquetes de software listos para desplegar." },
+                { "front": "¿Qué servicio de AWS automatiza los despliegues de aplicaciones?", "back": "AWS CodeDeploy: Automatiza los despliegues en instancias de Amazon EC2, AWS Lambda y servidores on-premises." },
+                { "front": "¿Qué es la Infraestructura como Código (IaC)?", "back": "La gestión y aprovisionamiento de la infraestructura a través de código y herramientas de automatización, en lugar de procesos manuales." },
+                { "front": "¿Cuál es el principal servicio de AWS para IaC?", "back": "AWS CloudFormation: Permite modelar y configurar los recursos de AWS en archivos de texto (YAML o JSON) para crear y gestionar 'stacks' de infraestructura." },
+                { "front": "¿Cuál es una ventaja clave de usar AWS CloudFormation?", "back": "Permite crear entornos consistentes y repetibles, versionar la infraestructura como si fuera código y automatizar la recuperación ante desastres." },
+                { "front": "¿Qué servicio de AWS se usa para monitoreo y observabilidad?", "back": "Amazon CloudWatch: Recopila y rastrea métricas, recoge y monitoriza archivos de log, y establece alarmas." },
+                { "front": "¿Para qué sirve Amazon CloudWatch Logs?", "back": "Permite centralizar, monitorizar, y almacenar archivos de log de diversas fuentes como EC2, Lambda, y otros servicios de AWS." },
+                { "front": "¿Qué servicio de AWS registra y audita las llamadas a la API?", "back": "AWS CloudTrail: Registra todas las llamadas a la API de AWS realizadas en una cuenta, proporcionando un historial de eventos para auditoría de seguridad y cumplimiento." },
+                { "front": "¿Cuál es la diferencia principal entre CloudWatch y CloudTrail?", "back": "CloudWatch se enfoca en el rendimiento de los recursos (métricas y logs), mientras que CloudTrail se enfoca en la actividad de la cuenta (quién hizo qué y cuándo)." },
+                { "front": "¿En qué consiste la estrategia de despliegue 'Blue/Green'?", "back": "Técnica para lanzar una nueva versión (Green) junto a la versión de producción (Blue), permitiendo cambiar el tráfico a la nueva versión una vez probada." },
+                { "front": "¿Cuál es el mayor beneficio de la estrategia Blue/Green?", "back": "Minimiza el tiempo de inactividad durante el despliegue y permite una reversión rápida y segura simplemente redirigiendo el tráfico de vuelta al entorno Blue." },
+                { "front": "¿Qué servicio de AWS se utiliza para el control de versiones de código fuente?", "back": "AWS CodeCommit: Un servicio de control de código fuente seguro, altamente escalable y gestionado que aloja repositorios Git privados." },
+                { "front": "¿Qué es un 'artefacto' en el contexto de AWS CodePipeline?", "back": "Una colección de archivos, como el código fuente o los archivos de compilación, que se pasa como entrada o salida entre las etapas de un pipeline." },
+                { "front": "¿Cuál es el propósito de las pruebas unitarias en un pipeline de CI?", "back": "Verificar que las unidades individuales de código fuente (como funciones o métodos) funcionan como se espera, de forma aislada." },
+                { "front": "¿Cuál es el propósito de las pruebas de integración en un pipeline de CI?", "back": "Verificar que diferentes módulos o servicios de software interactúan correctamente entre sí." },
+                { "front": "¿Qué práctica de DevOps implica fusionar código en un repositorio central frecuentemente?", "back": "Integración Continua (CI)." },
+                { "front": "¿Qué práctica de DevOps extiende la CI para liberar automáticamente los cambios a un entorno de preparación?", "back": "Entrega Continua (CD)." }
+            ];
 
-        const stage = document.querySelector('.card-stage');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const counter = document.getElementById('card-counter');
+            const cardElement = document.getElementById('card');
+            const cardWrapper = document.getElementById('card-wrapper');
+            const cardFrontText = document.querySelector('.card-front p');
+            const cardBackText = document.querySelector('.card-back p');
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const flipBtn = document.getElementById('flipBtn');
 
-        let currentIndex = 0;
-        let cardElements = [];
+            let currentCardIndex = 0;
+            let isAnimating = false;
+            
+            function updateCardContent(isInitial = false) {
+                const cardData = flashcards[currentCardIndex];
+                cardFrontText.textContent = cardData.front;
+                cardBackText.textContent = cardData.back;
+                progressText.textContent = `Tarjeta ${currentCardIndex + 1} / ${flashcards.length}`;
+                
+                const progressPercentage = ((currentCardIndex + 1) / flashcards.length) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
 
-        // Crear todas las tarjetas al inicio
-        function createCards() {
-            stage.innerHTML = '';
-            cardElements = cardData.map((data, index) => {
-                const container = document.createElement('div');
-                container.className = 'card-container';
-                if (index > 0) {
-                    container.classList.add('hidden-right');
+                if (!isInitial && cardElement.classList.contains('is-flipped')) {
+                    cardElement.classList.remove('is-flipped');
                 }
                 
-                container.innerHTML = `
-                    <div class="card w-full h-full">
-                        <div class="card-face card-face-front bg-aws-orange text-white">
-                            <h3 class="text-2xl font-bold text-center">${data.question}</h3>
-                        </div>
-                        <div class="card-face card-face-back bg-aws-dark text-white">
-                            <h4 class="text-xl font-semibold mb-2">Respuesta:</h4>
-                            <p class="text-center">${data.answer}</p>
-                        </div>
-                    </div>
-                `;
+                prevBtn.disabled = currentCardIndex === 0;
+                nextBtn.disabled = currentCardIndex === flashcards.length - 1;
+            }
+
+            function flipCard() {
+                if(isAnimating) return;
+                cardElement.classList.toggle('is-flipped');
+            }
+
+            function changeCard(direction) {
+                if (isAnimating) return;
                 
-                const card = container.querySelector('.card');
-                card.addEventListener('click', () => {
-                    card.classList.toggle('is-flipped');
-                });
+                const newIndex = currentCardIndex + direction;
+                if (newIndex < 0 || newIndex >= flashcards.length) return;
+                
+                isAnimating = true;
+                const slideOutClass = direction === 1 ? 'slide-out-left' : 'slide-out-right';
+                const slideInClass = direction === 1 ? 'slide-in-right' : 'slide-in-left';
 
-                stage.appendChild(container);
-                return container;
-            });
-            updateCounter();
-            updateNavButtons();
-        }
-
-        function updateCounter() {
-            counter.textContent = `${currentIndex + 1} / ${cardData.length}`;
-        }
-        
-        function updateNavButtons() {
-            prevBtn.disabled = currentIndex === 0;
-            nextBtn.disabled = currentIndex === cardData.length - 1;
-        }
-
-        function showCard(index, direction) {
-            // Voltear tarjeta actual si está girada
-            const currentCard = cardElements[currentIndex].querySelector('.card');
-            if(currentCard.classList.contains('is-flipped')){
-                currentCard.classList.remove('is-flipped');
+                cardWrapper.classList.add(slideOutClass);
+                
+                setTimeout(() => {
+                    currentCardIndex = newIndex;
+                    updateCardContent();
+                    
+                    cardWrapper.classList.remove(slideOutClass);
+                    cardWrapper.classList.add(slideInClass);
+                    
+                    setTimeout(() => {
+                        cardWrapper.classList.remove(slideInClass);
+                        isAnimating = false;
+                    }, 400); // Coincide con la duración de la animación
+                }, 400); // Coincide con la duración de la animación
             }
-
-            // Ocultar la tarjeta actual deslizándola
-            const oldCard = cardElements[currentIndex];
-            oldCard.classList.add(direction === 'next' ? 'hidden-left' : 'hidden-right');
-
-            // Mostrar la nueva tarjeta
-            currentIndex = index;
-            const newCard = cardElements[currentIndex];
-            newCard.classList.remove('hidden-left', 'hidden-right');
             
-            updateCounter();
-            updateNavButtons();
-        }
+            flipBtn.addEventListener('click', flipCard);
+            cardElement.addEventListener('click', flipCard);
+            nextBtn.addEventListener('click', () => changeCard(1));
+            prevBtn.addEventListener('click', () => changeCard(-1));
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') nextBtn.click();
+                if (e.key === 'ArrowLeft') prevBtn.click();
+                if (e.key === ' ') {
+                    e.preventDefault(); // Evita que la página haga scroll
+                    flipBtn.click();
+                }
+            });
 
-        nextBtn.addEventListener('click', () => {
-            if (currentIndex < cardData.length - 1) {
-                showCard(currentIndex + 1, 'next');
-            }
+            updateCardContent(true); // Carga inicial
         });
-
-        prevBtn.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                showCard(currentIndex - 1, 'prev');
-            }
-        });
-
-        // Iniciar el juego
-        createCards();
     </script>
 </body>
 </html>
