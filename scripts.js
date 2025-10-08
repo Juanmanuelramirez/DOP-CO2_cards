@@ -20,14 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             folder: 'Guías de Usuario',
             files: [
-                { name: 'Guía de Inicio', path: 'guias/inicio.html' },
-                { name: 'Guía Avanzada', path: 'guias/avanzada.html' }
-            ]
-        },
-        {
-            folder: 'Contacto',
-            files: [
-                { name: 'Formulario', path: 'contacto/formulario.html' }
+                { name: 'Guía de Inicio', path: 'guias/inicio.html' }
             ]
         }
     ];
@@ -36,8 +29,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainContent = document.getElementById('main-content');
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('toggle-btn');
+    
+    // --- LÓGICA AUTOMÁTICA PARA DETECTAR LA RUTA BASE ---
+    // Esto hace que funcione tanto localmente como en GitHub Pages sin cambios.
+    let basePath = '';
+    if (window.location.hostname.endsWith('github.io')) {
+        // Para GitHub Pages, la ruta debe empezar con el nombre del repositorio.
+        // Ejemplo: /DOP-CO2_cards/
+        const pathParts = window.location.pathname.split('/');
+        if (pathParts.length > 1 && pathParts[1]) {
+            basePath = `/${pathParts[1]}`;
+        }
+    }
+    // --- FIN DE LA LÓGICA AUTOMÁTICA ---
 
-    // --- El resto del código es 100% dinámico y no necesita cambios ---
 
     /**
      * Genera el menú HTML en la barra lateral a partir de la estructura definida.
@@ -48,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        menuContainer.innerHTML = ''; // Limpiamos el menú
+        menuContainer.innerHTML = '';
         fileStructure.forEach(item => {
             const folderTitle = document.createElement('h3');
             folderTitle.className = 'text-lg font-semibold text-gray-500 mt-6 mb-2 uppercase tracking-wider';
@@ -75,10 +80,13 @@ document.addEventListener('DOMContentLoaded', () => {
      * Carga el contenido de un archivo HTML en el área principal.
      */
     function loadContent(path) {
-         fetch(path)
+         // Se construye la ruta completa usando la base detectada automáticamente.
+         const fullPath = `${basePath}/${path}`;
+
+         fetch(fullPath)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`Error HTTP ${response.status} - No se pudo encontrar el archivo: ${path}`);
+                    throw new Error(`Error HTTP ${response.status} - No se pudo encontrar el archivo en: ${fullPath}`);
                 }
                 return response.text();
             })
@@ -102,11 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target.tagName === 'A' && event.target.dataset.path) {
             event.preventDefault();
             loadContent(event.target.dataset.path);
-            // Opcional: Ocultar el menú en móvil después de hacer clic
-            if (window.innerWidth < 768) {
-                sidebar.classList.add('-translate-x-full');
-                mainContent.classList.remove('ml-64');
-            }
         }
     });
 
