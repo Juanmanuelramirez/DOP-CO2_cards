@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- DATOS DE LAS FLASHCARDS ---
-    // Los datos del CSV se integran directamente aquí para eliminar errores de carga de archivos.
     const flashcardData = [
         {
             pregunta: "¿Qué servicio de AWS se utiliza para automatizar la implementación de software en una variedad de servicios de cómputo como Amazon EC2, AWS Fargate, AWS Lambda y servidores locales?",
@@ -37,21 +36,45 @@ document.addEventListener('DOMContentLoaded', () => {
             respuesta_correcta: "Balanceo de Carga (Load Balancing)",
             explicacion: "Elastic Load Balancing (ELB) distribuye automáticamente el tráfico de aplicaciones entrantes en varias instancias de Amazon EC2, contenedores, direcciones IP y funciones de Lambda, en una o varias Zonas de Disponibilidad."
         }
-        // Puedes seguir agregando más preguntas aquí.
     ];
 
-    // --- ELEMENTOS DEL DOM ---
-    const areaTitle = document.getElementById('area-title');
-    const cardCounter = document.getElementById('card-counter');
-    const questionText = document.getElementById('question-text');
-    const optionsContainer = document.getElementById('options-container');
-    const answerContainer = document.getElementById('answer-container');
-    const explanationText = document.getElementById('explanation-text');
-    const flipButton = document.getElementById('flip-button');
-    const prevButton = document.getElementById('prev-button');
-    const nextButton = document.getElementById('next-button');
-    const flashcard = document.getElementById('flashcard');
-    const welcomeMessage = document.getElementById('welcome-message');
+    // --- VALIDACIÓN DE ELEMENTOS DEL DOM ---
+    // Se verifica que todos los IDs requeridos existan en el HTML antes de continuar.
+    const requiredIds = [
+        'area-title', 'card-counter', 'question-text', 'options-container',
+        'answer-container', 'explanation-text', 'flip-button', 'prev-button',
+        'next-button', 'flashcard', 'welcome-message'
+    ];
+    const elements = {};
+    let missingElement = false;
+
+    for (const id of requiredIds) {
+        const el = document.getElementById(id);
+        if (!el) {
+            console.error(`Error Crítico: No se encontró el elemento con ID "${id}". Verifica tu archivo HTML.`);
+            missingElement = true;
+            break;
+        }
+        elements[id] = el;
+    }
+
+    if (missingElement) {
+        document.body.innerHTML = `
+            <div style="padding: 2rem; text-align: center; font-family: sans-serif; color: #333;">
+                <h1 style="color: #D9534F; font-size: 1.5rem; margin-bottom: 1rem;">Error de Configuración</h1>
+                <p>Falta un elemento HTML requerido para que la aplicación funcione.</p>
+                <p style="margin-top: 0.5rem;">Por favor, revisa la consola del navegador (F12) para ver el ID específico que falta y asegúrate de que tu archivo HTML esté correcto.</p>
+            </div>
+        `;
+        return; // Detiene la ejecución del script para prevenir más errores.
+    }
+
+    // --- ELEMENTOS DEL DOM (YA VALIDADOS) ---
+    const {
+        areaTitle, cardCounter, questionText, optionsContainer,
+        answerContainer, explanationText, flipButton, prevButton,
+        nextButton, flashcard, welcomeMessage
+    } = elements;
 
     let allFlashcards = [];
     let currentFlashcards = [];
@@ -59,61 +82,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let isFlipped = false;
 
     const areas = {
-        '1': 'Automatización del SDLC',
-        '2': 'Gestión de Configuración e IaC',
-        '3': 'Soluciones de Nube Resilientes',
-        '4': 'Monitoreo y Registros',
-        '5': 'Respuesta a Incidentes y Eventos',
-        '6': 'Seguridad y Cumplimiento'
-    };
-
-    const displayErrorMessage = (error) => {
-        console.error(error); // Mantenemos el log para depuración
-        flashcard.style.display = 'none';
-        welcomeMessage.style.display = 'flex';
-        welcomeMessage.innerHTML = `
-            <div class="text-center">
-                <h2 class="text-2xl font-bold mb-2 text-red-600">Error de Carga</h2>
-                <p class="text-gray-600">¡Oh no! No pudimos procesar las preguntas.</p>
-                <p class="text-gray-500 text-sm mt-2">La causa más común es un error en el formato de los datos internos. Por favor, verifica la consola para más detalles.</p>
-            </div>
-        `;
-    };
-
-    const displayWelcomeMessage = () => {
-        flashcard.style.display = 'none';
-        welcomeMessage.style.display = 'flex';
-    }
-
-    const processFlashcardData = () => {
-        try {
-            allFlashcards = flashcardData.map(row => {
-                // Aseguramos que las opciones se parseen correctamente.
-                // El replace es un seguro por si las comillas vienen dobles.
-                let opcionesParsed;
-                try {
-                    opcionesParsed = JSON.parse(row.opciones.replace(/""/g, '"'));
-                } catch (e) {
-                    console.warn("No se pudieron parsear las opciones para la pregunta:", row.pregunta, e);
-                    opcionesParsed = []; // Devolvemos un array vacío si falla
-                }
-                return {
-                    pregunta: row.pregunta,
-                    opciones: opcionesParsed,
-                    area: row.area.toString(),
-                    respuesta_correcta: row.respuesta_correcta,
-                    explicacion: row.explicacion
-                };
-            });
-        } catch (error) {
-            throw new Error("El formato de los datos internos (flashcardData) es incorrecto.");
-        }
+        '1': 'Automatización del SDLC', '2': 'Gestión de Configuración e IaC', '3': 'Soluciones de Nube Resilientes',
+        '4': 'Monitoreo y Registros', '5': 'Respuesta a Incidentes y Eventos', '6': 'Seguridad y Cumplimiento'
     };
     
+    const processFlashcardData = () => {
+        allFlashcards = flashcardData.map(row => {
+            let opcionesParsed;
+            try {
+                opcionesParsed = JSON.parse(row.opciones.replace(/""/g, '"'));
+            } catch (e) {
+                console.warn("No se pudieron parsear las opciones para la pregunta:", row.pregunta, e);
+                opcionesParsed = [];
+            }
+            return { ...row, area: row.area.toString(), opciones: opcionesParsed };
+        });
+    };
+
     const filterFlashcards = (area) => {
         currentFlashcards = allFlashcards.filter(card => card.area === area);
         currentIndex = 0;
-
         if (currentFlashcards.length > 0) {
             flashcard.style.display = 'block';
             welcomeMessage.style.display = 'none';
@@ -122,26 +110,17 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             flashcard.style.display = 'none';
             welcomeMessage.style.display = 'flex';
-             welcomeMessage.innerHTML = `
-                <div class="text-center">
-                    <h2 class="text-2xl font-bold mb-2">Área sin Preguntas</h2>
-                    <p class="text-gray-600">Aún no hay preguntas para "${areas[area]}".</p>
-                    <p class="text-gray-500 text-sm mt-2">Selecciona otra área del menú.</p>
-                </div>
-            `;
+            welcomeMessage.innerHTML = `<div class="text-center"><h2 class="text-2xl font-bold mb-2">Área sin Preguntas</h2><p class="text-gray-600">Aún no hay preguntas para "${areas[area]}".</p></div>`;
         }
     };
 
     const displayCard = () => {
         if (currentFlashcards.length === 0) return;
-
         isFlipped = false;
         flashcard.classList.remove('flipped');
-        
         const card = currentFlashcards[currentIndex];
         questionText.textContent = card.pregunta;
         cardCounter.textContent = `${currentIndex + 1} / ${currentFlashcards.length}`;
-        
         optionsContainer.innerHTML = '';
         card.opciones.forEach(opcion => {
             const button = document.createElement('button');
@@ -149,17 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
             button.textContent = opcion;
             optionsContainer.appendChild(button);
         });
-
         explanationText.textContent = card.explicacion;
-        const correctAnswerElement = document.createElement('p');
-        correctAnswerElement.className = 'mt-4 text-lg';
-        correctAnswerElement.innerHTML = `<strong>Respuesta Correcta:</strong> ${card.respuesta_correcta}`;
-        
         const answerContent = answerContainer.querySelector('.p-6');
-        answerContent.innerHTML = '';
-        answerContent.appendChild(explanationText);
-        answerContent.appendChild(correctAnswerElement);
-
+        if (answerContent) {
+            answerContent.innerHTML = `<p class="text-gray-700">${card.explicacion}</p><p class="mt-4 text-lg"><strong>Respuesta Correcta:</strong> ${card.respuesta_correcta}</p>`;
+        }
         updateNavButtons();
     };
 
@@ -170,45 +143,33 @@ document.addEventListener('DOMContentLoaded', () => {
         nextButton.classList.toggle('opacity-50', nextButton.disabled);
     };
 
-    // --- MANEJADORES DE EVENTOS (CON VERIFICACIÓN) ---
-    if (flipButton) {
-        flipButton.addEventListener('click', () => {
-            isFlipped = !isFlipped;
-            flashcard.classList.toggle('flipped');
-        });
-    }
-
-    if (prevButton) {
-        prevButton.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                displayCard();
-            }
-        });
-    }
-
-    if (nextButton) {
-        nextButton.addEventListener('click', () => {
-            if (currentIndex < currentFlashcards.length - 1) {
-                currentIndex++;
-                displayCard();
-            }
-        });
-    }
-
+    // --- MANEJADORES DE EVENTOS ---
+    flipButton.addEventListener('click', () => {
+        isFlipped = !isFlipped;
+        flashcard.classList.toggle('flipped');
+    });
+    prevButton.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            displayCard();
+        }
+    });
+    nextButton.addEventListener('click', () => {
+        if (currentIndex < currentFlashcards.length - 1) {
+            currentIndex++;
+            displayCard();
+        }
+    });
 
     // --- INICIALIZACIÓN ---
-    try {
-        processFlashcardData();
-        const urlParams = new URLSearchParams(window.location.search);
-        const area = urlParams.get('area');
-        if (area) {
-            filterFlashcards(area);
-        } else {
-            displayWelcomeMessage();
-        }
-    } catch (error) {
-        displayErrorMessage(error);
+    processFlashcardData();
+    const urlParams = new URLSearchParams(window.location.search);
+    const area = urlParams.get('area');
+    if (area) {
+        filterFlashcards(area);
+    } else {
+        flashcard.style.display = 'none';
+        welcomeMessage.style.display = 'flex';
     }
 });
 
