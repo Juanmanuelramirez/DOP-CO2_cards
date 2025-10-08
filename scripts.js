@@ -39,7 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar y procesar el archivo CSV
     const loadFlashcards = async () => {
         try {
-            const response = await fetch('flashcards.csv');
+            // --- CORRECCIÓN AQUÍ ---
+            // Se añade "./" para asegurar que la ruta sea relativa al directorio actual.
+            const response = await fetch('./flashcards.csv');
             if (!response.ok) {
                 throw new Error(`Error al cargar el archivo CSV: ${response.statusText}`);
             }
@@ -140,3 +142,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Iniciar la carga de datos al cargar la página
     loadFlashcards();
 });
+
