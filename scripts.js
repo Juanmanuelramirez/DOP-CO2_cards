@@ -39,34 +39,58 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar y procesar el archivo CSV
     const loadFlashcards = async () => {
         try {
-            // --- CORRECCIÓN AQUÍ ---
-            // Se añade "./" para asegurar que la ruta sea relativa al directorio actual.
             const response = await fetch('./flashcards.csv');
             if (!response.ok) {
-                throw new Error(`Error al cargar el archivo CSV: ${response.statusText}`);
+                // Si la respuesta no es OK (ej. 404), lanzamos un error claro
+                throw new Error(`Error de red: No se encontró el archivo (código ${response.status})`);
             }
             const csvData = await response.text();
             allFlashcards = parseCSV(csvData);
             
+            if (allFlashcards.length === 0) {
+                 throw new Error("El archivo CSV está vacío o no se pudo procesar correctamente.");
+            }
+
             const areaId = getAreaFromURL();
             if (areaId && KNOWLEDGE_AREAS[areaId]) {
                 filterAndDisplayCards(areaId);
             }
         } catch (error) {
-            console.error(error);
-            areaTitle.textContent = "Error";
-            welcomeMessage.innerHTML = `<p>No se pudieron cargar las tarjetas. Revisa la consola para más detalles y asegúrate de que el archivo 'flashcards.csv' exista.</p>`;
+            console.error("Error detallado al cargar las flashcards:", error);
+            areaTitle.textContent = "Error de Carga";
+            // Mensaje más específico para el usuario
+            welcomeMessage.innerHTML = `<p><strong>¡Oh no! No pudimos cargar las preguntas.</strong><br>La causa más común es que el archivo <code>flashcards.csv</code> no se encuentra en el servidor. Por favor, verifica que el archivo exista en tu repositorio de GitHub y que los cambios se hayan publicado.</p>`;
             welcomeMessage.style.display = 'flex';
         }
     };
 
-    // Función simple para parsear CSV (asume un formato específico)
+    // Función para parsear CSV más robusta
     const parseCSV = (csv) => {
         const lines = csv.split('\n').slice(1); // Omitir cabecera
-        return lines.map(line => {
-            const [pregunta, opciones, area, respuesta_correcta, explicacion] = line.split(';');
-            return { pregunta, opciones: JSON.parse(opciones), area, respuesta_correcta, explicacion };
-        }).filter(card => card.pregunta); // Filtrar líneas vacías
+        const cards = [];
+        lines.forEach((line, index) => {
+            // Ignorar líneas vacías
+            if (line.trim() === '') return;
+
+            const parts = line.split(';');
+            if (parts.length < 5) {
+                console.warn(`Línea ${index + 2} malformada en CSV (menos de 5 columnas), se omitirá:`, line);
+                return;
+            }
+            
+            const [pregunta, opcionesStr, area, respuesta_correcta, explicacion] = parts;
+            
+            try {
+                // Aseguramos que tengamos algo que parsear
+                if (pregunta && opcionesStr && area && respuesta_correcta) {
+                    const opciones = JSON.parse(opcionesStr);
+                    cards.push({ pregunta, opciones, area, respuesta_correcta, explicacion: explicacion || '' });
+                }
+            } catch (e) {
+                console.error(`Error al procesar JSON en la línea ${index + 2} del CSV. Revisa el formato de las opciones.`, {linea: line, error: e});
+            }
+        });
+        return cards;
     };
 
     // --- LÓGICA DE VISUALIZACIÓN ---
@@ -100,7 +124,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const card = currentCards[currentIndex];
         questionEl.textContent = card.pregunta;
-        correctAnswerEl.textContent = `${card.respuesta_correcta}) ${card.opciones[card.respuesta_correcta]}`;
+        
+        // Manejar el caso de que la respuesta no exista en las opciones
+        const respuestaTexto = card.opciones[card.respuesta_correcta] || 'Respuesta no encontrada';
+        correctAnswerEl.textContent = `${card.respuesta_correcta}) ${respuestaTexto}`;
+        
         explanationEl.textContent = card.explicacion;
 
         // Limpiar opciones anteriores y crear nuevas
