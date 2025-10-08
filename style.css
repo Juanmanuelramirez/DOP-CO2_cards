@@ -1,262 +1,32 @@
-/* Estilos Generales */
-:root {
-    --primary-color: #007bff;
-    --secondary-color: #6c757d;
-    --background-color: #f8f9fa;
-    --card-background: #ffffff;
-    --text-color: #333;
-    --border-color: #dee2e6;
-    --correct-answer: #28a745;
-    --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-body {
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-}
-
-#app-container {
-    display: flex;
-    width: 100%;
-    max-width: 1200px;
-    height: 90vh;
-    max-height: 800px;
-    background: var(--card-background);
-    border-radius: 15px;
-    box-shadow: var(--card-shadow);
-    overflow: hidden;
-}
-
-/* Barra Lateral (Menú) */
-.sidebar {
-    width: 280px;
-    background-color: #e9ecef;
-    padding: 20px;
-    border-right: 1px solid var(--border-color);
-    flex-shrink: 0;
-}
-
-.sidebar h2 {
-    color: var(--primary-color);
-    margin-top: 0;
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 10px;
-}
-
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-}
-
-.sidebar li a {
-    display: block;
-    padding: 12px 15px;
-    text-decoration: none;
-    color: var(--secondary-color);
-    border-radius: 8px;
-    margin-bottom: 5px;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.sidebar li a:hover {
-    background-color: #dcdcdc;
-    color: var(--primary-color);
-}
-
-/* Contenido Principal */
-.main-content {
-    flex-grow: 1;
-    padding: 30px 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-#area-title {
-    color: var(--text-color);
-    margin-bottom: 5px;
-}
-
-#card-counter {
-    color: var(--secondary-color);
-    font-size: 1.1em;
-    height: 20px;
-    margin-bottom: 20px;
-}
-
-#flashcard-viewer {
-    width: 100%;
-    max-width: 700px;
-    height: 400px; /* Altura fija para la tarjeta */
-    perspective: 1000px; /* Perspectiva para el efecto 3D */
-}
-
-/* Mensaje de Bienvenida */
-.card-placeholder {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    background: #f1f3f5;
-    border: 2px dashed var(--border-color);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    font-size: 1.2em;
-    color: #6c757d;
-}
-
-
-/* Estructura de la Flashcard */
-.flashcard-container {
-    width: 100%;
-    height: 100%;
-}
-
-.flashcard {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform 0.6s;
-}
-
-.flashcard.flipped {
+/* Estilos para el efecto de volteo de la tarjeta */
+.flipped {
     transform: rotateY(180deg);
 }
 
-.card-face {
+.backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden; /* Para compatibilidad con Safari */
+}
+
+/* El contenedor relativo es el que gira */
+.relative {
+    transition: transform 0.7s;
+    transform-style: preserve-3d;
+}
+
+/* Ambas caras ocupan el mismo espacio y ocultan su reverso */
+.front, .back {
     position: absolute;
     width: 100%;
     height: 100%;
+    top: 0;
+    left: 0;
     backface-visibility: hidden;
-    background: var(--card-background);
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 25px;
-    box-sizing: border-box;
-    overflow-y: auto;
+    -webkit-backface-visibility: hidden;
 }
 
-.card-front {
-    /* Estilos específicos para el frente */
-}
-
-.card-back {
+/* La cara trasera está pre-rotada */
+.back {
     transform: rotateY(180deg);
-    background-color: #f8f9fa;
 }
 
-.question-text {
-    font-size: 1.5em;
-    font-weight: 500;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.options {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
-}
-
-.option {
-    background-color: #f1f3f5;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 15px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.option:hover {
-    background-color: #e9ecef;
-}
-
-.answer-title, .explanation-title {
-    color: var(--primary-color);
-    align-self: flex-start;
-    width: 100%;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 8px;
-    margin-bottom: 10px;
-}
-
-.correct-answer {
-    font-size: 1.3em;
-    font-weight: bold;
-    color: var(--correct-answer);
-    margin-bottom: 20px;
-    align-self: flex-start;
-}
-
-.explanation-text {
-    font-size: 1em;
-    line-height: 1.6;
-    align-self: flex-start;
-    text-align: left;
-}
-
-
-/* Controles */
-.controls {
-    margin-top: 25px;
-    display: flex;
-    gap: 15px;
-}
-
-.controls button {
-    padding: 12px 25px;
-    font-size: 1em;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background-color: var(--primary-color);
-    color: white;
-    transition: background-color 0.3s;
-    font-weight: 500;
-}
-
-.controls button:hover {
-    background-color: #0056b3;
-}
-
-.controls #prev-btn {
-    background-color: var(--secondary-color);
-}
-
-.controls #prev-btn:hover {
-    background-color: #5a6268;
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-    #app-container {
-        flex-direction: column;
-        height: auto;
-        max-height: none;
-    }
-    .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-        height: auto;
-    }
-    .main-content {
-        padding: 20px;
-    }
-    #flashcard-viewer {
-        height: 350px;
-    }
-}

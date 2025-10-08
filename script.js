@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // --- VALIDACIÓN DE ELEMENTOS DEL DOM ---
-    // Se verifica que todos los IDs requeridos existan en el HTML antes de continuar.
     const requiredIds = [
         'area-title', 'card-counter', 'question-text', 'options-container',
         'answer-container', 'explanation-text', 'flip-button', 'prev-button',
@@ -59,36 +58,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (missingElement) {
-        document.body.innerHTML = `
-            <div style="padding: 2rem; text-align: center; font-family: sans-serif; color: #333;">
-                <h1 style="color: #D9534F; font-size: 1.5rem; margin-bottom: 1rem;">Error de Configuración</h1>
-                <p>Falta un elemento HTML requerido para que la aplicación funcione.</p>
-                <p style="margin-top: 0.5rem;">Por favor, revisa la consola del navegador (F12) para ver el ID específico que falta y asegúrate de que tu archivo HTML esté correcto.</p>
-            </div>
-        `;
-        return; // Detiene la ejecución del script para prevenir más errores.
+        document.body.innerHTML = `<div style="padding: 2rem; text-align: center; font-family: sans-serif; color: #333;"><h1 style="color: #D9534F;">Error de Configuración</h1><p>Falta un elemento HTML requerido. Revisa la consola (F12) para más detalles.</p></div>`;
+        return;
     }
 
-    // --- ELEMENTOS DEL DOM (YA VALIDADOS) ---
-    // Se utiliza la sintaxis de alias en la desestructuración para mapear los IDs con guiones a variables camelCase.
+    // --- ELEMENTOS DEL DOM ---
     const {
-        'area-title': areaTitle,
-        'card-counter': cardCounter,
-        'question-text': questionText,
-        'options-container': optionsContainer,
-        'answer-container': answerContainer,
-        'explanation-text': explanationText,
-        'flip-button': flipButton,
-        'prev-button': prevButton,
-        'next-button': nextButton,
-        flashcard,
-        'welcome-message': welcomeMessage
+        'area-title': areaTitle, 'card-counter': cardCounter, 'question-text': questionText,
+        'options-container': optionsContainer, 'answer-container': answerContainer,
+        'flip-button': flipButton, 'prev-button': prevButton, 'next-button': nextButton,
+        flashcard, 'welcome-message': welcomeMessage
     } = elements;
+    const cardContainer = flashcard.querySelector('.relative');
 
     let allFlashcards = [];
     let currentFlashcards = [];
     let currentIndex = 0;
-    let isFlipped = false;
 
     const areas = {
         '1': 'Automatización del SDLC', '2': 'Gestión de Configuración e IaC', '3': 'Soluciones de Nube Resilientes',
@@ -101,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 opcionesParsed = JSON.parse(row.opciones.replace(/""/g, '"'));
             } catch (e) {
-                console.warn("No se pudieron parsear las opciones para la pregunta:", row.pregunta, e);
                 opcionesParsed = [];
             }
             return { ...row, area: row.area.toString(), opciones: opcionesParsed };
@@ -119,15 +103,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             flashcard.style.display = 'none';
             welcomeMessage.style.display = 'flex';
-            welcomeMessage.innerHTML = `<div class="text-center"><h2 class="text-2xl font-bold mb-2">Área sin Preguntas</h2><p class="text-gray-600">Aún no hay preguntas para "${areas[area]}".</p></div>`;
+            welcomeMessage.innerHTML = `<div class="text-center"><h2 class="text-2xl font-bold mb-2">Área sin Preguntas</h2><p>Aún no hay preguntas para "${areas[area]}".</p></div>`;
         }
     };
 
     const displayCard = () => {
-        if (currentFlashcards.length === 0) return;
-        isFlipped = false;
-        const cardContainer = flashcard.querySelector('.relative');
-        if (cardContainer) cardContainer.classList.remove('flipped');
+        if (currentFlashcards.length === 0 || !cardContainer) return;
+        
+        cardContainer.classList.remove('flipped');
         
         const card = currentFlashcards[currentIndex];
         questionText.textContent = card.pregunta;
@@ -140,12 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
             optionsContainer.appendChild(button);
         });
 
-        explanationText.parentElement.innerHTML = `
-            <h2 class="text-lg font-semibold text-green-600">Respuesta y Explicación</h2>
-            <div id="answer-container" class="mt-4">
-                <p id="explanation-text" class="text-gray-700">${card.explicacion}</p>
-                <p class="mt-4 text-lg"><strong>Respuesta Correcta:</strong> ${card.respuesta_correcta}</p>
-            </div>`;
+        answerContainer.innerHTML = `
+            <p class="text-gray-700">${card.explicacion}</p>
+            <p class="mt-4 text-lg"><strong>Respuesta Correcta:</strong> ${card.respuesta_correcta}</p>
+        `;
         updateNavButtons();
     };
 
@@ -158,8 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MANEJADORES DE EVENTOS ---
     flipButton.addEventListener('click', () => {
-        isFlipped = !isFlipped;
-        const cardContainer = flashcard.querySelector('.relative');
         if (cardContainer) cardContainer.classList.toggle('flipped');
     });
     prevButton.addEventListener('click', () => {
