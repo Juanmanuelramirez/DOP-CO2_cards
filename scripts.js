@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
             folder: 'Flash Cards',
             files: [
                 { name: 'Filosofia y Servicios', path: 'Flash Cards/01.Filosofia_Servicios.html' },
-                { name: 'Filosofia y Servicios', path: 'Flash Cards/02.CodeSuite.html' }
+                { name: 'Code Suite', path: 'Flash Cards/02.CodeSuite.html' }
             ]
         }
     ];
