@@ -150,4 +150,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // Iniciar todo el proceso.
     fetchAndBuildMenu();
 });
-
