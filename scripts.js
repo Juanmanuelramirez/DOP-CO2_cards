@@ -63,10 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     /**
-     * Carga el contenido de un archivo HTML en el área principal.
+     * Carga el contenido de un archivo HTML y ejecuta sus scripts.
      */
     function loadContent(path) {
-         // Se usa la ruta relativa directamente. Esto es más simple y robusto.
          fetch(path)
             .then(response => {
                 if (!response.ok) {
@@ -75,7 +74,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 return response.text();
             })
             .then(html => {
+                // 1. Inyectamos el HTML en el área de contenido principal.
                 mainContent.innerHTML = html;
+
+                // 2. Buscamos todas las etiquetas <script> que vinieron en el HTML.
+                //    innerHTML no las ejecuta, así que lo haremos manualmente.
+                const scripts = mainContent.querySelectorAll("script");
+                
+                // 3. Para cada script encontrado, creamos uno nuevo y lo reemplazamos
+                //    para forzar al navegador a que lo ejecute.
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    
+                    // Copiamos los atributos (como src, defer, etc.)
+                    Array.from(oldScript.attributes).forEach(attr => {
+                        newScript.setAttribute(attr.name, attr.value);
+                    });
+                    
+                    // Copiamos el contenido del script.
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    
+                    // Reemplazamos el script viejo (inactivo) por el nuevo (activo).
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
             })
             .catch(error => {
                 console.error('Error al cargar la página:', error);
