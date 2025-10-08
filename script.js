@@ -170,24 +170,32 @@ document.addEventListener('DOMContentLoaded', () => {
         nextButton.classList.toggle('opacity-50', nextButton.disabled);
     };
 
-    flipButton.addEventListener('click', () => {
-        isFlipped = !isFlipped;
-        flashcard.classList.toggle('flipped');
-    });
+    // --- MANEJADORES DE EVENTOS (CON VERIFICACIÓN) ---
+    if (flipButton) {
+        flipButton.addEventListener('click', () => {
+            isFlipped = !isFlipped;
+            flashcard.classList.toggle('flipped');
+        });
+    }
 
-    prevButton.addEventListener('click', () => {
-        if (currentIndex > 0) {
-            currentIndex--;
-            displayCard();
-        }
-    });
+    if (prevButton) {
+        prevButton.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                displayCard();
+            }
+        });
+    }
 
-    nextButton.addEventListener('click', () => {
-        if (currentIndex < currentFlashcards.length - 1) {
-            currentIndex++;
-            displayCard();
-        }
-    });
+    if (nextButton) {
+        nextButton.addEventListener('click', () => {
+            if (currentIndex < currentFlashcards.length - 1) {
+                currentIndex++;
+                displayCard();
+            }
+        });
+    }
+
 
     // --- INICIALIZACIÓN ---
     try {
