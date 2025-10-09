@@ -1,183 +1,164 @@
-/* Estilos Generales */
+/* ========================================================================
+   Estilos Generales y Tema Claro
+   ======================================================================== */
 body {
-    font-family: 'Inter', sans-serif;
-}
-
-#app-container {
-    display: flex;
-    min-height: 100vh;
-}
-
-/* Estilos del Menú Lateral */
-.menu-link {
-    display: block;
-    padding: 10px 15px;
-    border-radius: 8px;
-    color: #4B5563; /* text-gray-600 */
-    font-weight: 500;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.menu-link:hover {
-    background-color: #F3F4F6; /* bg-gray-100 */
+    font-family: 'Poppins', sans-serif;
+    background-color: #F9FAFB; /* bg-gray-50 */
     color: #1F2937; /* text-gray-800 */
+    overflow-x: hidden;
 }
 
-.menu-link.active {
-    background-color: #3B82F6; /* bg-blue-600 */
-    color: white;
-    font-weight: 600;
+.hidden {
+    display: none !important;
 }
 
-/* Estilos de la Tarjeta y Animación */
-.card-container {
-    perspective: 1000px;
-    min-height: 450px;
-}
-
-.card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-}
-
-.card-container.flipped .card-inner, /* Compatibilidad con versiones anteriores */
-.card-inner.flipped {
-    transform: rotateY(180deg);
-}
-
-.card-face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.card-back {
-    transform: rotateY(180deg);
-    justify-content: center;
-}
-
-/* Estilos de los Botones de Opción */
-.option-btn {
-    width: 100%;
-    text-align: left;
-    padding: 1rem;
-    border: 1px solid #D1D5DB; /* border-gray-300 */
-    border-radius: 8px;
-    background-color: white;
-    color: #374151; /* text-gray-700 */
-    transition: all 0.2s;
-    font-weight: 500;
-}
-
-.option-btn:not(:disabled):hover {
-    border-color: #3B82F6; /* border-blue-600 */
-    background-color: #EFF6FF; /* bg-blue-50 */
-}
-
-.option-btn.correct {
-    background-color: #D1FAE5 !important; /* bg-green-100 */
-    border-color: #10B981 !important; /* border-green-500 */
-    color: #047857; /* text-green-800 */
-    font-weight: 600;
-}
-
-.option-btn.incorrect {
-    background-color: #FEE2E2 !important; /* bg-red-100 */
-    border-color: #EF4444 !important; /* border-red-500 */
-    color: #B91C1C; /* text-red-800 */
-    font-weight: 600;
-}
-
-.option-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.9;
-}
-
-
-/* Estilos de los Botones Principales */
-.next-btn, .retry-btn {
-    display: inline-block;
-    width: 100%;
-    margin-top: 2rem;
-    padding: 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    color: white;
-    background-color: #3B82F6; /* bg-blue-600 */
-    transition: background-color 0.2s;
-    border: none;
-    cursor: pointer;
-}
-
-.next-btn:hover, .retry-btn:hover {
-    background-color: #2563EB; /* bg-blue-700 */
-}
-
-/* Animación de la pantalla de idioma */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
+/* ========================================================================
+   Estilos del Selector de Idioma
+   ======================================================================== */
 #language-selector-overlay {
-    animation: fadeIn 0.5s ease-in-out;
+    animation: fadeIn 0.5s ease-out;
+}
+.lang-btn {
+    background-color: #3B82F6; /* bg-blue-500 */
+    color: white;
+    font-weight: 600;
+    font-size: 1.25rem; /* text-xl */
+    padding: 1rem 3rem; /* py-4 px-12 */
+    border-radius: 0.5rem; /* rounded-lg */
+    transition: transform 0.2s, background-color 0.2s;
+}
+.lang-btn:hover {
+    background-color: #2563EB; /* bg-blue-600 */
+    transform: scale(1.05);
 }
 
 
-/* --- ESTILOS RESPONSIVE PARA MÓVILES --- */
-@media (max-width: 767px) {
-    #app-container {
-        flex-direction: column;
-    }
+/* ========================================================================
+   Animaciones
+   ======================================================================== */
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(20px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+@keyframes fadeOut { 
+    from { opacity: 1; } 
+    to { opacity: 0; } 
+}
 
-    /* Ocultar el menú lateral por defecto en móvil */
-    #sidebar {
-        box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    }
-    
-    /* Mostrar el menú cuando el body tenga la clase */
-    body.mobile-menu-open #sidebar {
-        transform: translateX(0);
-    }
+.fade-in { animation: fadeIn 0.6s ease-out forwards; }
+.fade-out { animation: fadeOut 0.5s ease-in forwards; }
 
-    body.mobile-menu-open #overlay {
-        display: block;
-    }
-    
-    /* Ajustar el contenido principal para que ocupe todo el ancho */
-    #main-content {
-        width: 100%;
-        padding: 1.5rem; /* Aumentar padding en móvil */
-    }
+/* ========================================================================
+   Estilos del Menú Principal (Tema Claro)
+   ======================================================================== */
+#main-menu h1 {
+    color: #111827; /* text-gray-900 */
+}
+#main-menu p {
+    color: #4B5563; /* text-gray-600 */
+}
 
-    /* Ajustar tamaño de textos y tarjetas para mejor legibilidad */
-    .card-face {
-        padding: 1.5rem;
-    }
+.topic-card {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    border: 1px solid #E5E7EB; /* border-gray-200 */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+    overflow: hidden;
+}
+.topic-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    border-color: #3B82F6; /* border-blue-500 */
+}
+.topic-card .icon-container {
+    background: linear-gradient(145deg, #60A5FA, #3B82F6);
+}
+.topic-card h2 {
+    color: #1F2937;
+}
 
-    #question-text {
-        font-size: 1.1rem; /* Ligeramente más grande para leer */
-        min-height: 120px;
-    }
+/* ========================================================================
+   Estilos de la Vista de Estudio (Tema Claro)
+   ======================================================================== */
+#study-view {
+    display: none;
+}
+.sub-topic-link {
+    color: #4B5563;
+    transition: all 0.2s ease-in-out;
+    border-left: 4px solid transparent;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+}
+.sub-topic-link.active {
+    background-color: #EFF6FF; /* bg-blue-50 */
+    color: #2563EB; /* text-blue-600 */
+    border-left-color: #3B82F6;
+    font-weight: 600;
+}
+.sub-topic-link:hover:not(.active) {
+    background-color: #F3F4F6; /* bg-gray-100 */
+}
 
-    .option-btn {
-        padding: 0.8rem 1rem;
-        font-size: 0.95rem;
-    }
-    
-    #welcome-message h1, #results-screen h2 {
-        font-size: 2rem;
-    }
+/* Estilos para el contenido de estudio (Tema Claro) */
+#study-content h3 {
+    @apply text-3xl font-bold text-gray-900 mb-4;
+}
+#study-content h4 {
+    @apply text-2xl font-semibold text-gray-800 mt-8 mb-4;
+}
+#study-content p {
+    @apply text-lg text-gray-700 mb-6 leading-relaxed;
+}
+#study-content ul {
+    @apply list-disc list-inside space-y-3 text-gray-700 mb-6;
+}
+#study-content strong {
+    @apply text-blue-600 font-semibold;
+}
+.info-box {
+    @apply bg-blue-50 p-4 rounded-lg border border-blue-200 text-blue-800;
+}
+#study-content pre {
+    background-color: #F3F4F6;
+    color: #1F2937;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-size: 0.9rem;
+}
+#study-content code {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    background-color: #E5E7EB;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #B91C1C; /* text-red-700 */
+}
+#study-content pre code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+}
+
+/* ========================================================================
+   Scrollbar Personalizada (Tema Claro)
+   ======================================================================== */
+::-webkit-scrollbar { 
+    width: 10px; 
+}
+::-webkit-scrollbar-track { 
+    background: #F3F4F6; 
+}
+::-webkit-scrollbar-thumb { 
+    background: #D1D5DB; 
+    border-radius: 5px; 
+    border: 2px solid #F3F4F6;
+}
+::-webkit-scrollbar-thumb:hover { 
+    background: #9CA3AF; 
 }
 
