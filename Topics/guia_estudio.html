@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOP-C02 Ultimate Study Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Menú Principal -->
+    <div id="main-menu" class="container mx-auto px-4 py-12">
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-white tracking-tight">DOP-C02 Ultimate Study Guide</h1>
+            <p class="text-xl text-gray-400 mt-4">Select a knowledge area to begin your training.</p>
+        </header>
+        <div id="topic-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Las tarjetas de temas se generan aquí con JS -->
+        </div>
+    </div>
+
+    <!-- Vista de Estudio (Oculta por defecto) -->
+    <div id="study-view">
+        <div class="flex h-full">
+            <!-- Sidebar -->
+            <aside id="study-sidebar" class="w-1/4 h-full overflow-y-auto p-6 hidden md:block">
+                <h2 id="sidebar-title" class="text-2xl font-bold text-white mb-6"></h2>
+                <nav id="sidebar-nav" class="space-y-2"></nav>
+            </aside>
+            <!-- Contenido Principal de Estudio -->
+            <main class="w-full md:w-3/4 h-full overflow-y-auto p-6 md:p-10 relative">
+                <button id="back-to-menu-btn" class="absolute top-6 right-6 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition-colors z-10">
+                    &times;
+                </button>
+                <div id="study-content"></div>
+            </main>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
