@@ -1,183 +1,206 @@
-/* Estilos Generales */
-body {
-    font-family: 'Inter', sans-serif;
-}
-
-#app-container {
-    display: flex;
-    min-height: 100vh;
-}
-
-/* Estilos del Menú Lateral */
-.menu-link {
-    display: block;
-    padding: 10px 15px;
-    border-radius: 8px;
-    color: #4B5563; /* text-gray-600 */
-    font-weight: 500;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.menu-link:hover {
-    background-color: #F3F4F6; /* bg-gray-100 */
-    color: #1F2937; /* text-gray-800 */
-}
-
-.menu-link.active {
-    background-color: #3B82F6; /* bg-blue-600 */
-    color: white;
-    font-weight: 600;
-}
-
-/* Estilos de la Tarjeta y Animación */
-.card-container {
-    perspective: 1000px;
-    min-height: 450px;
-}
-
-.card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-}
-
-.card-container.flipped .card-inner, /* Compatibilidad con versiones anteriores */
-.card-inner.flipped {
-    transform: rotateY(180deg);
-}
-
-.card-face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.card-back {
-    transform: rotateY(180deg);
-    justify-content: center;
-}
-
-/* Estilos de los Botones de Opción */
-.option-btn {
-    width: 100%;
-    text-align: left;
-    padding: 1rem;
-    border: 1px solid #D1D5DB; /* border-gray-300 */
-    border-radius: 8px;
-    background-color: white;
-    color: #374151; /* text-gray-700 */
-    transition: all 0.2s;
-    font-weight: 500;
-}
-
-.option-btn:not(:disabled):hover {
-    border-color: #3B82F6; /* border-blue-600 */
-    background-color: #EFF6FF; /* bg-blue-50 */
-}
-
-.option-btn.correct {
-    background-color: #D1FAE5 !important; /* bg-green-100 */
-    border-color: #10B981 !important; /* border-green-500 */
-    color: #047857; /* text-green-800 */
-    font-weight: 600;
-}
-
-.option-btn.incorrect {
-    background-color: #FEE2E2 !important; /* bg-red-100 */
-    border-color: #EF4444 !important; /* border-red-500 */
-    color: #B91C1C; /* text-red-800 */
-    font-weight: 600;
-}
-
-.option-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.9;
-}
+// Importar el contenido de cada área desde sus archivos dedicados
+import { area1Content } from './area_1.js';
+import { area2Content } from './area_2.js';
+import { area3Content } from './area_3.js';
+import { area4Content } from './area_4.js';
+import { area5Content } from './area_5.js';
+import { area6Content } from './area_6.js';
 
 
-/* Estilos de los Botones Principales */
-.next-btn, .retry-btn {
-    display: inline-block;
-    width: 100%;
-    margin-top: 2rem;
-    padding: 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    color: white;
-    background-color: #3B82F6; /* bg-blue-600 */
-    transition: background-color 0.2s;
-    border: none;
-    cursor: pointer;
-}
+document.addEventListener('DOMContentLoaded', () => {
 
-.next-btn:hover, .retry-btn:hover {
-    background-color: #2563EB; /* bg-blue-700 */
-}
+    // Diccionario de textos para la UI
+    const uiText = {
+        en: {
+            main_title: "DOP-C02 Ultimate Study Guide",
+            main_subtitle: "Select a knowledge area to begin your training.",
+            back_to_menu: "Back to Menu"
+        },
+        es: {
+            main_title: "Guía de Estudio Definitiva DOP-C02",
+            main_subtitle: "Selecciona un área de conocimiento para iniciar tu entrenamiento.",
+            back_to_menu: "Volver al Menú"
+        }
+    };
 
-/* Animación de la pantalla de idioma */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
+    // Combinar todos los datos importados en un solo objeto para la aplicación
+    const studyData = {
+        '1': area1Content,
+        '2': area2Content,
+        '3': area3Content,
+        '4': area4Content,
+        '5': area5Content,
+        '6': area6Content,
+    };
 
-#language-selector-overlay {
-    animation: fadeIn 0.5s ease-in-out;
-}
+    // ========================================================================
+    //  ELEMENTOS DEL DOM
+    // ========================================================================
+    const langOverlay = document.getElementById('language-selector-overlay');
+    const appContainer = document.getElementById('app-container');
+    const langEnButton = document.getElementById('lang-en');
+    const langEsButton = document.getElementById('lang-es');
+    const mainMenu = document.getElementById('main-menu');
+    const topicGrid = document.getElementById('topic-grid');
+    const studyView = document.getElementById('study-view');
+    
+    // Vistas Desktop
+    const sidebar = document.getElementById('sidebar');
+    const sidebarTitle = document.getElementById('sidebar-title');
+    const sidebarNav = document.getElementById('sidebar-nav');
+    const backToMenuBtn = document.getElementById('back-to-menu-btn');
 
+    // Vistas Mobile
+    const mobileTitle = document.getElementById('mobile-title');
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');
+    const mobileSidebar = document.getElementById('mobile-sidebar');
+    const mobileSidebarTitle = document.getElementById('mobile-sidebar-title');
+    const mobileSidebarNav = document.getElementById('mobile-sidebar-nav');
+    const mobileBackToMenuBtn = document.getElementById('mobile-back-to-menu-btn');
+    
+    const studyContent = document.getElementById('study-content');
 
-/* --- ESTILOS RESPONSIVE PARA MÓVILES --- */
-@media (max-width: 767px) {
-    #app-container {
-        flex-direction: column;
+    // ========================================================================
+    //  ESTADO DE LA APLICACIÓN
+    // ========================================================================
+    let currentLanguage;
+    let currentTopicId;
+
+    // ========================================================================
+    //  LÓGICA DE IDIOMA Y TRADUCCIÓN
+    // ========================================================================
+    function setupAndStartApp(lang) {
+        currentLanguage = lang;
+        langOverlay.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        translateUI();
+        init(); // Iniciar la lógica principal de la app
     }
 
-    /* Ocultar el menú lateral por defecto en móvil */
-    #sidebar {
-        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    function translateUI() {
+        document.querySelectorAll('[data-key]').forEach(el => {
+            const key = el.dataset.key;
+            if (uiText[currentLanguage][key]) {
+                el.textContent = uiText[currentLanguage][key];
+            }
+        });
+    }
+
+    function parseBilingual(text) {
+        if (!text || !text.includes(' / ')) return text;
+        const parts = text.split(' / ');
+        const content = currentLanguage === 'en' ? parts[0].trim() : parts[1].trim();
+        
+        // Renderizar el contenido bilingüe correctamente
+        if (content.startsWith('<div')) {
+             const parser = new DOMParser();
+             const doc = parser.parseFromString(content, 'text/html');
+             return doc.querySelector(`div[lang=${currentLanguage}]`).innerHTML;
+        }
+        return content;
+    }
+
+    // ========================================================================
+    //  LÓGICA PRINCIPAL DE LA APLICACIÓN
+    // ========================================================================
+    function init() {
+        renderMainMenu();
+        backToMenuBtn.addEventListener('click', showMainMenu);
+        mobileBackToMenuBtn.addEventListener('click', showMainMenu);
+        hamburgerBtn.addEventListener('click', toggleMobileMenu);
+        mobileSidebarOverlay.addEventListener('click', toggleMobileMenu);
+    }
+
+    function renderMainMenu() {
+        topicGrid.innerHTML = '';
+        Object.keys(studyData).forEach(id => {
+            const topic = studyData[id];
+            const card = document.createElement('div');
+            card.className = 'topic-card cursor-pointer p-6 flex flex-col items-center text-center fade-in';
+            card.style.animationDelay = `${id * 100}ms`;
+            card.innerHTML = `
+                <div class="icon-container p-4 rounded-full text-white mb-4">${topic.icon}</div>
+                <h2 class="text-2xl font-bold">${parseBilingual(topic.title)}</h2>
+            `;
+            card.addEventListener('click', () => showStudyView(id));
+            topicGrid.appendChild(card);
+        });
+    }
+
+    function showStudyView(topicId) {
+        currentTopicId = topicId;
+        mainMenu.classList.add('fade-out');
+        setTimeout(() => {
+            mainMenu.classList.add('hidden');
+            mainMenu.classList.remove('fade-out');
+            
+            studyView.classList.remove('hidden');
+            studyView.classList.add('fade-in');
+            renderStudySection(topicId, 0);
+        }, 500);
+    }
+
+    function showMainMenu() {
+        studyView.classList.add('fade-out');
+        setTimeout(() => {
+            studyView.classList.add('hidden');
+            studyView.classList.remove('fade-out');
+
+            mainMenu.classList.remove('hidden');
+            mainMenu.classList.add('fade-in');
+        }, 500);
+    }
+
+    function renderStudySection(topicId, sectionIndex) {
+        const topic = studyData[topicId];
+        const topicTitle = parseBilingual(topic.title);
+
+        // Actualizar títulos
+        sidebarTitle.textContent = topicTitle;
+        mobileSidebarTitle.textContent = topicTitle;
+        mobileTitle.textContent = topicTitle;
+
+        // Limpiar navegaciones
+        sidebarNav.innerHTML = '';
+        mobileSidebarNav.innerHTML = '';
+
+        topic.sections.forEach((section, index) => {
+            const sectionTitle = parseBilingual(section.title);
+            
+            // Crear link para desktop
+            const link = document.createElement('a');
+            link.href = '#';
+            link.textContent = sectionTitle;
+            link.className = 'sub-topic-link block';
+            if (index === sectionIndex) link.classList.add('active');
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                renderStudySection(topicId, index);
+            });
+            sidebarNav.appendChild(link);
+
+            // Crear link para mobile
+            const mobileLink = link.cloneNode(true);
+            mobileLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                renderStudySection(topicId, index);
+                toggleMobileMenu(); // Cerrar menú al seleccionar
+            });
+            mobileSidebarNav.appendChild(mobileLink);
+        });
+
+        studyContent.innerHTML = parseBilingual(topic.sections[sectionIndex].content);
+        document.querySelector('#main-content').scrollTop = 0;
     }
     
-    /* Mostrar el menú cuando el body tenga la clase */
-    body.mobile-menu-open #sidebar {
-        transform: translateX(0);
+    function toggleMobileMenu() {
+        mobileSidebarOverlay.classList.toggle('hidden');
+        mobileSidebar.classList.toggle('-translate-x-full');
     }
 
-    body.mobile-menu-open #overlay {
-        display: block;
-    }
-    
-    /* Ajustar el contenido principal para que ocupe todo el ancho */
-    #main-content {
-        width: 100%;
-        padding: 1.5rem; /* Aumentar padding en móvil */
-    }
-
-    /* Ajustar tamaño de textos y tarjetas para mejor legibilidad */
-    .card-face {
-        padding: 1.5rem;
-    }
-
-    #question-text {
-        font-size: 1.1rem; /* Ligeramente más grande para leer */
-        min-height: 120px;
-    }
-
-    .option-btn {
-        padding: 0.8rem 1rem;
-        font-size: 0.95rem;
-    }
-    
-    #welcome-message h1, #results-screen h2 {
-        font-size: 2rem;
-    }
-}
+    // --- INICIO DE LA APLICACIÓN ---
+    langEnButton.addEventListener('click', () => setupAndStartApp('en'));
+    langEsButton.addEventListener('click', () => setupAndStartApp('es'));
+});
 
