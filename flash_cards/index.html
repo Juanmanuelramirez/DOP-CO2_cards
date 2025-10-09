@@ -90,21 +90,13 @@
 
     <!-- Menú Lateral (Móvil) -->
     <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden"></div>
-    <aside id="mobile-sidebar" class="fixed top-0 left-0 h-full w-4/5 max-w-sm bg-white p-6 z-40 transform -translate-x-full">
+    <aside id="mobile-sidebar" class="fixed top-0 left-0 h-full w-4/5 max-w-sm bg-white p-6 z-40 transform -translate-x-full transition-transform duration-300 ease-in-out">
         <h2 class="text-xl font-bold text-gray-800 mb-6" data-key="areas_conocimiento">Áreas de Conocimiento</h2>
         <nav id="mobile-area-menu" class="space-y-2"></nav>
     </aside>
 
-    <!-- Cargar archivos de datos primero -->
-    <script src="./area_1.js"></script>
-    <script src="./area_2.js"></script>
-    <script src="./area_3.js"></script>
-    <script src="./area_4.js"></script>
-    <script src="./area_5.js"></script>
-    <script src="./area_6.js"></script>
-    
-    <!-- Cargar el script principal al final -->
-    <script src="./script.js"></script>
+    <!-- Cargar el script principal como un módulo -->
+    <script type="module" src="./script.js"></script>
 </body>
 </html>
 
