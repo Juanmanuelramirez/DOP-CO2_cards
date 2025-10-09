@@ -1,10 +1,10 @@
 // Importar el contenido de cada área desde sus archivos dedicados
-import { area1Questions } from 'area_1.js';
-import { area2Questions } from 'area_2.js';
-import { area3Questions } from 'area_3.js';
-import { area4Questions } from 'area_4.js';
-import { area5Questions } from 'area_5.js';
-import { area6Questions } from 'area_6.js';
+import { area1Questions } from './area_1.js';
+import { area2Questions } from './area_2.js';
+import { area3Questions } from './area_3.js';
+import { area4Questions } from './area_4.js';
+import { area5Questions } from './area_5.js';
+import { area6Questions } from './area_6.js';
 
 
 document.addEventListener('DOMContentLoaded', () => {
