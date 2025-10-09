@@ -3,88 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desafío Flashcards DOP-C02</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>DOP-C02 Flashcards Challenge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-100 font-['Poppins'] flex items-center justify-center min-h-screen">
+<body class="bg-gray-100 font-sans">
 
-    <!-- Selector de Idioma -->
-    <div id="language-selector-overlay" class="absolute inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-50">
-        <div class="bg-white p-10 rounded-xl shadow-2xl text-center">
-            <h1 class="text-3xl font-bold mb-2 text-gray-800">Select Language</h1>
-            <h2 class="text-2xl font-bold mb-6 text-gray-700">Selecciona Idioma</h2>
-            <div class="flex gap-5 justify-center">
-                <button id="lang-en" class="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-transform hover:scale-105 text-lg font-semibold shadow-lg">English</button>
-                <button id="lang-es" class="px-8 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-transform hover:scale-105 text-lg font-semibold shadow-lg">Español</button>
+    <!-- Pantalla de Selección de Idioma -->
+    <div id="language-selector-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50 transition-opacity duration-300">
+        <div class="bg-white rounded-lg shadow-2xl p-8 text-center max-w-sm w-full mx-4">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome / Bienvenido</h1>
+            <p class="text-gray-600 mb-6">Please select your language / Por favor, selecciona tu idioma</p>
+            <div class="flex flex-col space-y-4">
+                <button id="lang-en" class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">English</button>
+                <button id="lang-es" class="w-full bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors">Español</button>
             </div>
         </div>
     </div>
 
-    <div id="app-container" class="flex w-full max-w-7xl h-[80vh] bg-white rounded-2xl shadow-2xl overflow-hidden hidden">
+    <!-- Contenedor Principal de la App (Oculto al inicio) -->
+    <div id="app-container" class="hidden">
+        <!-- Overlay para el menú móvil -->
+        <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
+        
         <!-- Menú Lateral -->
-        <aside class="w-1/4 bg-slate-50 p-6 border-r flex flex-col">
-            <h2 class="text-xl font-bold mb-4 border-b pb-3 text-slate-800" data-key="areas_conocimiento">Áreas de Conocimiento</h2>
-            <nav class="flex-grow">
-                <ul id="area-menu">
-                    <li><a href="#" class="menu-link" data-area="1" data-key="area_1"></a></li>
-                    <li><a href="#" class="menu-link" data-area="2" data-key="area_2"></a></li>
-                    <li><a href="#" class="menu-link" data-area="3" data-key="area_3"></a></li>
-                    <li><a href="#" class="menu-link" data-area="4" data-key="area_4"></a></li>
-                    <li><a href="#" class="menu-link" data-area="5" data-key="area_5"></a></li>
-                    <li><a href="#" class="menu-link" data-area="6" data-key="area_6"></a></li>
-                </ul>
+        <aside id="sidebar" class="bg-white w-64 h-full fixed md:relative transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-40 p-5">
+            <h2 data-key="areas_conocimiento" class="text-xl font-bold text-gray-800 mb-6">Áreas de Conocimiento</h2>
+            <nav id="area-menu" class="space-y-2">
+                <a href="#" data-area="1" data-key="area_1" class="menu-link">Automatización del SDLC</a>
+                <a href="#" data-area="2" data-key="area_2" class="menu-link">Gestión de Configuración e IaC</a>
+                <a href="#" data-area="3" data-key="area_3" class="menu-link">Soluciones de Nube Resilientes</a>
+                <a href="#" data-area="4" data-key="area_4" class="menu-link">Monitoreo y Registros</a>
+                <a href="#" data-area="5" data-key="area_5" class="menu-link">Respuesta a Incidentes y Eventos</a>
+                <a href="#" data-area="6" data-key="area_6" class="menu-link">Seguridad y Cumplimiento</a>
             </nav>
         </aside>
 
         <!-- Contenido Principal -->
-        <main class="w-3/4 p-8 flex flex-col items-center justify-center relative">
+        <main id="main-content" class="flex-1 p-4 md:p-10 transition-all duration-300">
+             <!-- Cabecera Móvil con Botón de Menú -->
+            <header class="md:hidden flex items-center mb-4">
+                <button id="hamburger-btn" class="p-2 mr-2 text-gray-600 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h1 id="mobile-area-title" class="text-xl font-bold text-gray-800 truncate">Flashcards</h1>
+            </header>
             
-            <div id="welcome-message" class="text-center">
-                <h1 class="text-4xl font-bold text-gray-800" data-key="welcome_title"></h1>
-                <p class="text-gray-500 mt-4 text-lg" data-key="welcome_subtitle"></p>
+            <div id="welcome-message" class="text-center bg-white p-10 rounded-xl shadow-lg">
+                <h1 data-key="welcome_title" class="text-4xl font-bold text-gray-800 mb-2">Desafío Flashcards DOP-C02</h1>
+                <p data-key="welcome_subtitle" class="text-lg text-gray-600">Selecciona un área para iniciar el desafío.</p>
             </div>
-
-            <div id="game-container" class="w-full max-w-3xl hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h1 id="area-title" class="text-2xl font-bold text-gray-800"></h1>
-                    <div class="text-lg font-semibold text-blue-600"><span data-key="puntuacion"></span>: <span id="score">0</span></div>
+            
+            <div id="game-container" class="hidden max-w-2xl mx-auto">
+                 <div class="flex justify-between items-center mb-4">
+                    <h1 id="area-title" class="text-2xl font-bold text-gray-800 hidden md:block">Área</h1>
+                    <div class="text-right">
+                        <span data-key="puntuacion" class="font-semibold text-gray-600">Puntuación</span>:
+                        <span id="score" class="font-bold text-blue-600 text-lg">0</span>
+                    </div>
                 </div>
-                
-                 <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-                    <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                    <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
                 </div>
 
-                <div id="flashcard" style="perspective: 1500px;">
+                <div class="card-container">
                     <div id="card-inner" class="card-inner">
                         <div class="card-face card-front">
-                            <div class="flex justify-between items-center">
-                                <h2 class="text-lg font-semibold text-blue-600" data-key="pregunta"></h2>
-                                <span id="card-counter" class="text-sm font-medium text-gray-500"></span>
+                             <div class="flex justify-between items-center mb-4">
+                                <span data-key="pregunta" class="font-semibold text-blue-600">Pregunta</span>
+                                <span id="card-counter" class="text-sm text-gray-500">1 / 20</span>
                             </div>
-                            <p id="question-text" class="text-xl text-gray-800 my-4 min-h-[100px]"></p>
-                            <div id="options-container" class="mt-4 space-y-3"></div>
+                            <p id="question-text" class="text-lg md:text-xl text-gray-800 mb-6 min-h-[100px]"></p>
+                            <div id="options-container" class="space-y-3"></div>
                         </div>
-
                         <div class="card-face card-back">
-                             <div id="feedback-header" class="flex items-center gap-3 mb-4"></div>
-                             <p id="explanation-text" class="text-gray-700"></p>
-                             <p class="mt-4 text-lg"><strong data-key="respuesta_correcta_label"></strong> <span id="correct-answer-text"></span></p>
+                            <div id="feedback-header" class="mb-4"></div>
+                            <div class="space-y-3 text-left">
+                                <div>
+                                    <strong data-key="respuesta_correcta_label" class="text-gray-700">Respuesta Correcta:</strong>
+                                    <p id="correct-answer-text" class="mt-1 text-green-700 bg-green-100 p-3 rounded-lg"></p>
+                                </div>
+                                <div>
+                                    <p id="explanation-text" class="text-gray-600"></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="navigation-buttons" class="flex justify-center items-center mt-6">
-                    <button id="next-button" class="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-lg font-semibold hidden" data-key="siguiente_pregunta"></button>
-                </div>
+                <button id="next-button" data-key="siguiente_pregunta" class="next-btn hidden">Siguiente Pregunta</button>
             </div>
 
-            <div id="results-screen" class="text-center hidden">
-                <h1 class="text-4xl font-bold text-gray-800" data-key="results_title"></h1>
-                <p class="text-2xl text-gray-600 mt-4" data-key="results_subtitle"></p>
-                <div id="final-score" class="text-7xl font-bold text-blue-600 my-6"></div>
-                <button id="retry-button" class="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-lg font-semibold" data-key="reintentar"></button>
+            <div id="results-screen" class="hidden text-center bg-white p-10 rounded-xl shadow-lg max-w-2xl mx-auto">
+                <h2 data-key="results_title" class="text-4xl font-bold text-gray-800 mb-2">¡Desafío Completado!</h2>
+                <p data-key="results_subtitle" class="text-lg text-gray-600">Tu puntuación final es:</p>
+                <p id="final-score" class="text-6xl font-bold text-blue-600 my-6">0</p>
+                <button id="retry-button" data-key="reintentar" class="retry-btn">Reintentar</button>
             </div>
         </main>
     </div>
