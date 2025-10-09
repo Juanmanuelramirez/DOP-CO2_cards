@@ -148,7 +148,26 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // --- DICCIONARIO DE TEXTOS UI ---
-    const uiText = { /* ... */ };
+    const uiText = {
+        en: {
+            areas_conocimiento: "Knowledge Areas", area_1: "SDLC Automation", area_2: "Configuration Management & IaC",
+            area_3: "Resilient Cloud Solutions", area_4: "Monitoring & Logging", area_5: "Incident & Event Response",
+            area_6: "Security & Compliance", welcome_title: "DOP-C02 Flashcards Challenge", welcome_subtitle: "Select an area to start the challenge.",
+            puntuacion: "Score", pregunta: "Question", respuesta_correcta_label: "Correct Answer:", siguiente_pregunta: "Next Question",
+            results_title: "Challenge Complete!", results_subtitle: "Your final score is:", reintentar: "Retry",
+            proximamente_title: "Coming Soon", proximamente_subtitle: "There are no questions for the {area} area yet.",
+            feedback_correcto: "Correct!", feedback_incorrecto: "Incorrect!"
+        },
+        es: {
+            areas_conocimiento: "Áreas de Conocimiento", area_1: "Automatización del SDLC", area_2: "Gestión de Configuración e IaC",
+            area_3: "Soluciones de Nube Resilientes", area_4: "Monitoreo y Registros", area_5: "Respuesta a Incidentes y Eventos",
+            area_6: "Seguridad y Cumplimiento", welcome_title: "Desafío Flashcards DOP-C02", welcome_subtitle: "Selecciona un área para iniciar el desafío.",
+            puntuacion: "Puntuación", pregunta: "Pregunta", respuesta_correcta_label: "Respuesta Correcta:", siguiente_pregunta: "Siguiente Pregunta",
+            results_title: "¡Desafío Completado!", results_subtitle: "Tu puntuación final es:", reintentar: "Reintentar",
+            proximamente_title: "Próximamente", proximamente_subtitle: "Aún no hay preguntas para el área de {area}.",
+            feedback_correcto: "¡Correcto!", feedback_incorrecto: "¡Incorrecto!"
+        }
+    };
 
     // --- ELEMENTOS DEL DOM ---
     const langOverlay = document.getElementById('language-selector-overlay');
@@ -223,18 +242,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const areaName = uiText[currentLanguage][`area_${area}`];
 
         if (currentFlashcards.length === 0) {
-            // ... (código de próximamente)
-        } else {
-            currentIndex = 0;
-            score = 0;
-            welcomeMessage.classList.add('hidden');
+            const title = uiText[currentLanguage].proximamente_title;
+            const subtitle = uiText[currentLanguage].proximamente_subtitle.replace('{area}', areaName);
+            welcomeMessage.innerHTML = `<div class="text-center">
+                <h2 class="text-2xl font-bold mb-2">${title}</h2>
+                <p class="text-gray-600">${subtitle}</p>
+            </div>`;
+            welcomeMessage.classList.remove('hidden');
+            gameContainer.classList.add('hidden');
             resultsScreen.classList.add('hidden');
-            gameContainer.classList.remove('hidden');
-            nextButton.classList.add('hidden');
-            updateScore();
-            displayCard();
             updateMenuHighlight();
+            return;
         }
+
+        currentIndex = 0;
+        score = 0;
+        welcomeMessage.classList.add('hidden');
+        resultsScreen.classList.add('hidden');
+        gameContainer.classList.remove('hidden');
+        nextButton.classList.add('hidden');
+        updateScore();
+        displayCard();
+        updateMenuHighlight();
     }
     
     function displayCard() {
@@ -262,10 +291,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleOptionClick(selectedOption, correctAnswer, button) {
-        // ... (lógica sin cambios)
-    }
-    // ... (resto de funciones de lógica de juego sin cambios)
+        const parsedCorrectAnswer = parseBilingual(correctAnswer);
+        const isCorrect = parseBilingual(selectedOption) === parsedCorrectAnswer;
+        
+        if (isCorrect) {
+            score += 10;
+            button.classList.add('correct');
+            feedbackHeader.innerHTML = `<h2 class="text-2xl font-bold text-green-600">${uiText[currentLanguage].feedback_correcto}</h2>`;
+        } else {
+            button.classList.add('incorrect');
+            feedbackHeader.innerHTML = `<h2 class="text-2xl font-bold text-red-600">${uiText[currentLanguage].feedback_incorrecto}</h2>`;
+        }
 
+        updateScore();
+        
+        Array.from(optionsContainer.children).forEach(btn => {
+            btn.disabled = true;
+            if (btn.textContent === parsedCorrectAnswer) {
+                btn.classList.add('correct');
+            }
+        });
+        
+        cardInner.classList.add('flipped');
+        nextButton.classList.remove('hidden');
+    }
+
+    function showNextCard() {
+        currentIndex++;
+        if (currentIndex < currentFlashcards.length) {
+            nextButton.classList.add('hidden');
+            displayCard();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        gameContainer.classList.add('hidden');
+        resultsScreen.classList.remove('hidden');
+        finalScore.textContent = score;
+    }
+
+    function updateScore() {
+        scoreEl.textContent = score;
+    }
+
+    function updateProgressBar() {
+        const progress = (currentIndex / (currentFlashcards.length - 1)) * 100;
+        progressBar.style.width = currentFlashcards.length > 1 ? `${progress}%` : '100%';
+    }
+    
     function updateMenuHighlight() {
         areaMenu.querySelectorAll('a').forEach(link => {
             link.classList.remove('active');
@@ -296,8 +371,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        nextButton.addEventListener('click', () => { /* ... */ });
-        retryButton.addEventListener('click', () => { /* ... */ });
+        nextButton.addEventListener('click', showNextCard);
+        retryButton.addEventListener('click', () => {
+            if(currentArea) startGame(currentArea);
+        });
         
         const urlParams = new URLSearchParams(window.location.search);
         const area = urlParams.get('area');
