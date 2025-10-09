@@ -1,4 +1,3 @@
-// Importar el contenido de cada área desde sus archivos dedicados
 import { area1Questions } from './area_1.js';
 import { area2Questions } from './area_2.js';
 import { area3Questions } from './area_3.js';
@@ -10,7 +9,6 @@ import { area6Questions } from './area_6.js';
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- DICCIONARIO DE TEXTOS UI ---
-    // (Añadido para futuras traducciones si se implementa un selector de idioma)
     const uiText = {
         es: {
             areas_conocimiento: "Áreas de Conocimiento",
@@ -34,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
             feedback_correcto: "¡Correcto!",
             feedback_incorrecto: "¡Incorrecto!"
         }
+        // English translations would go here
     };
     
     // --- ELEMENTOS DEL DOM ---
@@ -56,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const retryButton = document.getElementById('retry-button');
     const areaMenu = document.getElementById('area-menu');
     
-    // Elementos del menú móvil
     const hamburgerBtn = document.getElementById('hamburger-btn');
     const mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');
     const mobileSidebar = document.getElementById('mobile-sidebar');
@@ -69,9 +67,58 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentIndex = 0;
     let score = 0;
     let currentArea = null;
-    let currentLanguage = 'es'; 
+    let currentLanguage = 'es'; // Default language
 
     // --- LÓGICA DEL JUEGO ---
+    function initialize() {
+        allFlashcards = [
+            ...area1Questions,
+            ...area2Questions,
+            ...area3Questions,
+            ...area4Questions,
+            ...area5Questions,
+            ...area6Questions
+        ];
+
+        // Clonar menú para móvil
+        const menuLinks = areaMenu.querySelectorAll('.menu-link');
+        menuLinks.forEach(link => {
+            const clone = link.cloneNode(true);
+            mobileAreaMenu.appendChild(clone);
+        });
+
+        // Asignar eventos
+        document.querySelectorAll('.menu-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const area = e.target.dataset.area;
+                startGame(area);
+                // Cerrar menú móvil si está abierto
+                if (document.body.classList.contains('mobile-menu-open')) {
+                    toggleMobileMenu();
+                }
+            });
+        });
+
+        nextButton.addEventListener('click', showNextCard);
+        retryButton.addEventListener('click', () => startGame(currentArea));
+        hamburgerBtn.addEventListener('click', toggleMobileMenu);
+        mobileSidebarOverlay.addEventListener('click', toggleMobileMenu);
+
+        // Iniciar juego si hay un parámetro en la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const areaParam = urlParams.get('area');
+        if (areaParam) {
+            startGame(areaParam);
+        }
+    }
+
+    function toggleMobileMenu() {
+        document.body.classList.toggle('mobile-menu-open');
+        mobileSidebarOverlay.classList.toggle('hidden');
+        mobileSidebar.classList.toggle('-translate-x-full');
+    }
+
     function startGame(area) {
         currentArea = area;
         currentFlashcards = allFlashcards.filter(card => card.area.toString() === area);
@@ -89,8 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Aleatorizar preguntas
-        currentFlashcards.sort(() => Math.random() - 0.5);
+        currentFlashcards.sort(() => Math.random() - 0.5); // Aleatorizar preguntas
 
         currentIndex = 0;
         score = 0;
@@ -173,5 +219,23 @@ document.addEventListener('DOMContentLoaded', () => {
         finalScore.textContent = score;
     }
 
-...
+    function updateScore() {
+        scoreEl.textContent = score;
+    }
 
+    function updateProgressBar() {
+        const progress = ((currentIndex + 1) / currentFlashcards.length) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+    
+    function updateMenuHighlight() {
+        document.querySelectorAll('.menu-link').forEach(link => {
+            link.classList.remove('active');
+            if (link.dataset.area === currentArea) {
+                link.classList.add('active');
+            }
+        });
+    }
+
+    initialize();
+});
