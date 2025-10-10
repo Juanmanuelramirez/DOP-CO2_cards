@@ -314,3 +314,4 @@ const initialize = () => {
 // Initialize the app once the DOM is loaded
 document.addEventListener('DOMContentLoaded', initialize);
 
+
