@@ -7,7 +7,7 @@ body {
 }
 
 .hidden {
-    display: none !important;
+    display: none; /* Se eliminó !important para permitir que Tailwind funcione */
 }
 
 /* Estilo para cuando el menú móvil está abierto */
