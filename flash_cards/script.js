@@ -1,3 +1,10 @@
+import { area1Questions } from './area_1.js';
+import { area2Questions } from './area_2.js';
+import { area3Questions } from './area_3.js';
+import { area4Questions } from './area_4.js';
+import { area5Questions } from './area_5.js';
+import { area6Questions } from './area_6.js';
+
 // --- State Variables ---
 let currentLanguage = 'en';
 let currentQuestions = [];
@@ -8,12 +15,12 @@ let currentArea = 0;
 
 // Combine all questions from global scope
 const allQuestions = [
-    ...(typeof area1Questions !== 'undefined' ? area1Questions : []),
-    ...(typeof area2Questions !== 'undefined' ? area2Questions : []),
-    ...(typeof area3Questions !== 'undefined' ? area3Questions : []),
-    ...(typeof area4Questions !== 'undefined' ? area4Questions : []),
-    ...(typeof area5Questions !== 'undefined' ? area5Questions : []),
-    ...(typeof area6Questions !== 'undefined' ? area6Questions : []),
+    ...area1Questions,
+    ...area2Questions,
+    ...area3Questions,
+    ...area4Questions,
+    ...area5Questions,
+    ...area6Questions,
 ];
 
 const domainInfo = {
