@@ -1,27 +1,11 @@
-import { area1Questions } from './area_1.js';
-import { area2Questions } from './area_2.js';
-import { area3Questions } from './area_3.js';
-import { area4Questions } from './area_4.js';
-import { area5Questions } from './area_5.js';
-import { area6Questions } from './area_6.js';
-
 // --- State Variables ---
 let currentLanguage = 'en';
+let allQuestions = []; // This will be populated by fetching the JSON
 let currentQuestions = [];
 let currentQuestionIndex = 0;
 let score = 0;
 let questionsAnswered = false;
 let currentArea = 0;
-
-// Combine all questions from global scope
-const allQuestions = [
-    ...area1Questions,
-    ...area2Questions,
-    ...area3Questions,
-    ...area4Questions,
-    ...area5Questions,
-    ...area6Questions,
-];
 
 const domainInfo = {
     en: [
@@ -107,6 +91,7 @@ const translations = {
         finalScore: "Final Score:",
         playAgain: "Play This Domain Again",
         mainMenu: "Back to Main Menu",
+        loading: "Loading questions..."
     },
     es: {
         welcomeTitle: "¡Bienvenido!",
@@ -117,10 +102,33 @@ const translations = {
         finalScore: "Puntaje Final:",
         playAgain: "Jugar este Dominio de Nuevo",
         mainMenu: "Volver al Menú Principal",
+        loading: "Cargando preguntas..."
     }
 };
 
 // --- Functions ---
+
+/**
+ * Fetches and loads all questions from the JSON file.
+ * This is an asynchronous operation.
+ */
+const loadAllQuestions = async () => {
+    try {
+        // We assume questions.json is in the same directory as the HTML file.
+        const response = await fetch('./questions.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const questionsByArea = await response.json();
+        // Flatten the object of arrays into a single array of questions
+        allQuestions = Object.values(questionsByArea).flat();
+    } catch (error) {
+        console.error("Could not load questions:", error);
+        elements.welcomeText.textContent = "Error: Could not load questions. Please check the console.";
+    }
+};
+
+
 const showMainContent = (screenName) => {
     Object.values(screens).forEach(screen => screen.classList.add('hidden'));
     if (screens[screenName]) {
@@ -137,7 +145,7 @@ const parseText = (text) => {
 const updateUIText = () => {
     const t = translations[currentLanguage];
     elements.welcomeTitle.textContent = t.welcomeTitle;
-    elements.welcomeText.textContent = t.welcomeText;
+    elements.welcomeText.textContent = allQuestions.length > 0 ? t.welcomeText : t.loading;
     elements.explanationTitle.textContent = t.explanation;
     elements.nextQuestionBtn.textContent = t.nextQuestion;
     elements.endTitle.textContent = t.quizComplete;
@@ -291,9 +299,15 @@ const closeMobileMenu = () => {
 }
 
 // --- Event Listeners ---
-const initialize = () => {
-    setLanguage('en'); // Set default language
+const initialize = async () => {
+    // Show a loading message while we fetch the questions
+    setLanguage('en'); 
     showMainContent('welcome');
+    
+    await loadAllQuestions(); // Asynchronously load the questions
+    
+    // Once questions are loaded, update the UI and enable interactions
+    updateUIText();
 
     elements.langEnBtn.addEventListener('click', () => setLanguage('en'));
     elements.langEsBtn.addEventListener('click', () => setLanguage('es'));
@@ -313,5 +327,4 @@ const initialize = () => {
 
 // Initialize the app once the DOM is loaded
 document.addEventListener('DOMContentLoaded', initialize);
-
 
