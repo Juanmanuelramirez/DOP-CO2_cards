@@ -1,102 +1,103 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOP-C02 Flashcards Challenge</title>
+    <title>AWS DOP-C02 Flashcards</title>
+    <!-- Tailwind for layout and Poppins font -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./style.css">
+    
+    <!-- Custom Stylesheet from user -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-gray-50">
 
-    <div class="flex h-screen">
-        <!-- Menú Lateral (Desktop) -->
-        <aside id="sidebar" class="hidden md:block w-1/4 max-w-xs bg-white border-r border-gray-200 p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-6" data-key="areas_conocimiento">Áreas de Conocimiento</h2>
-            <nav id="area-menu" class="space-y-2">
-                <a href="#" class="menu-link" data-area="1" data-key="area_1">Automatización del SDLC</a>
-                <a href="#" class="menu-link" data-area="2" data-key="area_2">Gestión de Configuración e IaC</a>
-                <a href="#" class="menu-link" data-area="3" data-key="area_3">Soluciones de Nube Resilientes</a>
-                <a href="#" class="menu-link" data-area="4" data-key="area_4">Monitoreo y Registros</a>
-                <a href="#" class="menu-link" data-area="5" data-key="area_5">Respuesta a Incidentes y Eventos</a>
-                <a href="#" class="menu-link" data-area="6" data-key="area_6">Seguridad y Cumplimiento</a>
-            </nav>
-        </aside>
+    <div id="app-container" class="w-full max-w-4xl mx-auto p-4 md:p-8">
 
-        <!-- Contenido Principal -->
-        <main class="w-full md:w-3/4 p-4 md:p-8 lg:p-12 flex flex-col items-center overflow-y-auto">
-            <!-- Header Móvil -->
-            <header class="md:hidden flex items-center justify-between w-full mb-4">
-                <button id="hamburger-btn" class="p-2 rounded-md text-gray-600 hover:bg-gray-100">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-                <h1 id="mobile-area-title" class="text-xl font-bold text-gray-800">DOP-C02 Challenge</h1>
-            </header>
-            
-            <div class="w-full max-w-3xl">
-                <!-- Mensaje de Bienvenida -->
-                <div id="welcome-message" class="text-center p-8 bg-white rounded-2xl shadow-sm">
-                    <h1 class="text-3xl font-bold text-gray-800" data-key="welcome_title">Desafío Flashcards DOP-C02</h1>
-                    <p class="mt-2 text-gray-600" data-key="welcome_subtitle">Selecciona un área para iniciar el desafío.</p>
-                </div>
-
-                <!-- Contenedor del Juego -->
-                <div id="game-container" class="hidden w-full">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 id="area-title" class="text-2xl font-bold text-gray-800"></h2>
-                        <div class="text-lg font-semibold"><span data-key="puntuacion">Puntuación</span>: <span id="score">0</span></div>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-                        <div id="progress-bar" class="bg-blue-500 h-2.5 rounded-full" style="width: 0%"></div>
-                    </div>
-
-                    <div class="perspective">
-                        <div id="card-inner" class="card">
-                            <!-- Cara Frontal (Pregunta) -->
-                            <div class="card-face card-front">
-                                <div class="flex justify-between items-center text-sm font-medium text-gray-500 mb-4">
-                                    <span data-key="pregunta">Pregunta</span>
-                                    <span id="card-counter">1 / 20</span>
-                                </div>
-                                <p id="question-text" class="text-lg font-semibold flex-grow"></p>
-                            </div>
-                            <!-- Cara Trasera (Respuesta) -->
-                            <div class="card-face card-back justify-center">
-                                <div id="feedback-header" class="text-center mb-4"></div>
-                                <p class="text-sm font-bold text-gray-600" data-key="respuesta_correcta_label">Respuesta Correcta:</p>
-                                <p id="correct-answer-text" class="font-semibold text-blue-600 mb-4"></p>
-                                <p id="explanation-text" class="text-gray-700"></p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="options-container" class="mt-6 space-y-3"></div>
-                    <button id="next-button" class="action-btn hidden" data-key="siguiente_pregunta">Siguiente Pregunta</button>
-                </div>
-
-                <!-- Pantalla de Resultados -->
-                <div id="results-screen" class="hidden text-center p-8 bg-white rounded-2xl shadow-sm">
-                    <h2 class="text-3xl font-bold text-green-500" data-key="results_title">¡Desafío Completado!</h2>
-                    <p class="mt-2 text-gray-600" data-key="results_subtitle">Tu puntuación final es:</p>
-                    <p id="final-score" class="text-7xl font-bold my-4"></p>
-                    <button id="retry-button" class="action-btn" data-key="reintentar">Reintentar</button>
+        <!-- Language Selection Screen -->
+        <div id="language-screen" class="text-center bg-white p-8 rounded-3xl shadow-lg">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">AWS DOP-C02</h1>
+            <h2 class="text-xl md:text-2xl text-gray-600 mt-2">Flashcards</h2>
+            <div class="pt-8">
+                <p class="mb-4 text-lg text-gray-700">Select Language / Selecciona Idioma</p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <button id="lang-en" class="action-btn">ENGLISH</button>
+                    <button id="lang-es" class="action-btn">ESPAÑOL</button>
                 </div>
             </div>
-        </main>
+        </div>
+        
+        <!-- Domain Selection Screen -->
+        <div id="domain-screen" class="hidden text-center bg-white p-8 rounded-3xl shadow-lg">
+            <h1 id="domain-title" class="text-2xl md:text-3xl font-bold text-gray-800 mb-8"></h1>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button data-area="1" class="option-btn text-center">1. SDLC Automation</button>
+                <button data-area="2" class="option-btn text-center">2. Config Mgmt & IaC</button>
+                <button data-area="3" class="option-btn text-center">3. Resilient Cloud</button>
+                <button data-area="4" class="option-btn text-center">4. Monitoring & Logging</button>
+                <button data-area="5" class="option-btn text-center">5. Incident Response</button>
+                <button data-area="6" class="option-btn text-center">6. Security & Compliance</button>
+            </div>
+            <button id="back-to-lang" class="mt-8 text-blue-600 hover:underline"></button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="hidden">
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl shadow">
+                <div class="w-full sm:w-auto flex items-center mb-3 sm:mb-0">
+                     <button id="back-to-menu" class="text-sm text-gray-600 hover:text-blue-600 mr-4"></button>
+                     <div id="question-counter" class="font-bold text-lg whitespace-nowrap text-gray-700">Q 1/10</div>
+                </div>
+                <div class="w-full sm:w-1/2 bg-gray-200 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+                 <div id="score" class="font-bold text-lg whitespace-nowrap text-gray-700 mt-3 sm:mt-0 sm:ml-4">Score: 0</div>
+            </div>
+
+            <!-- Flashcard -->
+            <div class="perspective">
+                <div id="card" class="card">
+                    <div id="card-front" class="card-face justify-center">
+                        <p id="question-text" class="text-xl md:text-2xl font-semibold text-center text-gray-800"></p>
+                    </div>
+                    <div id="card-back" class="card-back justify-center">
+                         <h3 id="explanation-title" class="text-xl font-bold text-blue-600 mb-3"></h3>
+                         <p id="explanation-text" class="text-gray-700"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div id="options-container" class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4">
+            </div>
+
+            <!-- Controls -->
+            <div id="controls-container" class="mt-2">
+                 <button id="next-question" class="action-btn hidden"></button>
+            </div>
+        </div>
+        
+        <!-- End Screen -->
+        <div id="end-screen" class="hidden text-center bg-white p-8 rounded-3xl shadow-lg">
+             <h1 id="end-title" class="text-3xl font-bold text-gray-800"></h1>
+             <p id="final-score-text" class="text-2xl mt-4 text-gray-700"></p>
+             <p id="final-percentage-text" class="text-5xl font-bold mt-2 text-blue-600"></p>
+             <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+                 <button id="play-again" class="action-btn"></button>
+                 <button id="main-menu" class="option-btn text-center font-semibold"></button>
+            </div>
+        </div>
     </div>
 
-    <!-- Menú Lateral (Móvil) -->
-    <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden"></div>
-    <aside id="mobile-sidebar" class="fixed top-0 left-0 h-full w-4/5 max-w-sm bg-white p-6 z-40 transform -translate-x-full transition-transform duration-300 ease-in-out">
-        <h2 class="text-xl font-bold text-gray-800 mb-6" data-key="areas_conocimiento">Áreas de Conocimiento</h2>
-        <nav id="mobile-area-menu" class="space-y-2"></nav>
-    </aside>
-
-    <!-- Cargar el script principal como un módulo -->
-    <script type="module" src="./script.js"></script>
+    <!-- Main application logic -->
+    <script type="module" src="script.js"></script>
+    
+    <!-- Tone.js for sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
 </body>
 </html>
 

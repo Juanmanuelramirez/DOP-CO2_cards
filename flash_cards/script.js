@@ -1,4 +1,4 @@
-// Importar el contenido de cada área desde sus archivos dedicados
+// --- Import Question Data ---
 import { area1Questions } from './area_1.js';
 import { area2Questions } from './area_2.js';
 import { area3Questions } from './area_3.js';
@@ -6,233 +6,235 @@ import { area4Questions } from './area_4.js';
 import { area5Questions } from './area_5.js';
 import { area6Questions } from './area_6.js';
 
+const allQuestions = [
+    ...area1Questions,
+    ...area2Questions,
+    ...area3Questions,
+    ...area4Questions,
+    ...area5Questions,
+    ...area6Questions,
+];
 
-document.addEventListener('DOMContentLoaded', () => {
+// --- State Variables ---
+let currentLanguage = 'en';
+let currentQuestions = [];
+let currentQuestionIndex = 0;
+let score = 0;
+let questionsAnswered = false;
 
-    // --- DICCIONARIO DE TEXTOS UI ---
-    const uiText = {
-        es: {
-            areas_conocimiento: "Áreas de Conocimiento",
-            area_1: "Automatización del SDLC",
-            area_2: "Gestión de Configuración e IaC",
-            area_3: "Soluciones de Nube Resilientes",
-            area_4: "Monitoreo y Registros",
-            area_5: "Respuesta a Incidentes y Eventos",
-            area_6: "Seguridad y Cumplimiento",
-            welcome_title: "Desafío Flashcards DOP-C02",
-            welcome_subtitle: "Selecciona un área para iniciar el desafío.",
-            puntuacion: "Puntuación",
-            pregunta: "Pregunta",
-            respuesta_correcta_label: "Respuesta Correcta:",
-            siguiente_pregunta: "Siguiente Pregunta",
-            results_title: "¡Desafío Completado!",
-            results_subtitle: "Tu puntuación final es:",
-            reintentar: "Reintentar",
-            proximamente_title: "Próximamente",
-            proximamente_subtitle: "Aún no hay preguntas para el área de {area}.",
-            feedback_correcto: "¡Correcto!",
-            feedback_incorrecto: "¡Incorrecto!"
-        }
-    };
-    
-    // --- ELEMENTOS DEL DOM ---
-    const welcomeMessage = document.getElementById('welcome-message');
-    const gameContainer = document.getElementById('game-container');
-    const areaTitle = document.getElementById('area-title');
-    const mobileAreaTitle = document.getElementById('mobile-area-title');
-    const scoreEl = document.getElementById('score');
-    const progressBar = document.getElementById('progress-bar');
-    const cardInner = document.getElementById('card-inner');
-    const cardCounter = document.getElementById('card-counter');
-    const questionText = document.getElementById('question-text');
-    const optionsContainer = document.getElementById('options-container');
-    const feedbackHeader = document.getElementById('feedback-header');
-    const explanationText = document.getElementById('explanation-text');
-    const correctAnswerText = document.getElementById('correct-answer-text');
-    const nextButton = document.getElementById('next-button');
-    const resultsScreen = document.getElementById('results-screen');
-    const finalScore = document.getElementById('final-score');
-    const retryButton = document.getElementById('retry-button');
-    const areaMenu = document.getElementById('area-menu');
-    
-    const hamburgerBtn = document.getElementById('hamburger-btn');
-    const mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');
-    const mobileSidebar = document.getElementById('mobile-sidebar');
-    const mobileAreaMenu = document.getElementById('mobile-area-menu');
+// --- Sound Effects ---
+let synth;
+const playSound = (note, duration) => {
+    // Initialize Tone.js on the first user interaction
+    if (!synth) {
+        if (typeof Tone === 'undefined') return;
+        synth = new Tone.Synth().toDestination();
+    }
+    if (Tone.context.state !== 'running') {
+        Tone.context.resume();
+    }
+    synth.triggerAttackRelease(note, duration);
+}
 
+// --- UI Elements ---
+const screens = {
+    language: document.getElementById('language-screen'),
+    domain: document.getElementById('domain-screen'),
+    game: document.getElementById('game-screen'),
+    end: document.getElementById('end-screen'),
+};
 
-    // --- ESTADO DEL JUEGO ---
-    let allFlashcards = [];
-    let currentFlashcards = [];
-    let currentIndex = 0;
-    let score = 0;
-    let currentArea = null;
-    let currentLanguage = 'es'; 
+const elements = {
+    // Language/Domain
+    langEnBtn: document.getElementById('lang-en'),
+    langEsBtn: document.getElementById('lang-es'),
+    domainTitle: document.getElementById('domain-title'),
+    backToLangBtn: document.getElementById('back-to-lang'),
+    // Game
+    questionCounter: document.getElementById('question-counter'),
+    scoreDisplay: document.getElementById('score'),
+    progressBar: document.getElementById('progress-bar'),
+    card: document.getElementById('card'),
+    questionText: document.getElementById('question-text'),
+    explanationTitle: document.getElementById('explanation-title'),
+    explanationText: document.getElementById('explanation-text'),
+    optionsContainer: document.getElementById('options-container'),
+    nextQuestionBtn: document.getElementById('next-question'),
+    backToMenuBtn: document.getElementById('back-to-menu'),
+    // End
+    endTitle: document.getElementById('end-title'),
+    finalScore: document.getElementById('final-score-text'),
+    finalPercentage: document.getElementById('final-percentage-text'),
+    playAgainBtn: document.getElementById('play-again'),
+    mainMenuBtn: document.getElementById('main-menu'),
+};
 
-    // --- LÓGICA DEL JUEGO ---
-    function initialize() {
-        allFlashcards = [
-            ...area1Questions,
-            ...area2Questions,
-            ...area3Questions,
-            ...area4Questions,
-            ...area5Questions,
-            ...area6Questions
-        ];
+const translations = {
+    en: {
+        selectDomain: "Select Domain",
+        back: "Back",
+        explanation: "Explanation",
+        nextQuestion: "Next Question",
+        backToMenu: "Menu",
+        quizComplete: "Quiz Complete!",
+        finalScore: "Final Score:",
+        finalPercentage: "Accuracy:",
+        playAgain: "Play Again",
+        mainMenu: "Main Menu",
+    },
+    es: {
+        selectDomain: "Selecciona Dominio",
+        back: "Volver",
+        explanation: "Explicación",
+        nextQuestion: "Siguiente Pregunta",
+        backToMenu: "Menú",
+        quizComplete: "¡Prueba Completa!",
+        finalScore: "Puntaje Final:",
+        finalPercentage: "Precisión:",
+        playAgain: "Jugar de Nuevo",
+        mainMenu: "Menú Principal",
+    }
+};
 
-        const menuLinks = areaMenu.querySelectorAll('.menu-link');
-        menuLinks.forEach(link => {
-            const clone = link.cloneNode(true);
-            mobileAreaMenu.appendChild(clone);
-        });
+// --- Functions ---
+const showScreen = (screenName) => {
+    Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+    screens[screenName].classList.remove('hidden');
+};
 
-        document.querySelectorAll('.menu-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const area = e.target.dataset.area;
-                startGame(area);
-                if (document.body.classList.contains('mobile-menu-open')) {
-                    toggleMobileMenu();
-                }
-            });
-        });
+const parseText = (text) => {
+    if (!text || !text.includes('/')) return text;
+    const parts = text.split('/').map(p => p.trim());
+    return currentLanguage === 'es' ? parts[1] : parts[0];
+};
 
-        nextButton.addEventListener('click', showNextCard);
-        retryButton.addEventListener('click', () => startGame(currentArea));
-        hamburgerBtn.addEventListener('click', toggleMobileMenu);
-        mobileSidebarOverlay.addEventListener('click', toggleMobileMenu);
+const updateUIText = () => {
+    const t = translations[currentLanguage];
+    elements.domainTitle.textContent = t.selectDomain;
+    elements.backToLangBtn.textContent = t.back;
+    elements.explanationTitle.textContent = t.explanation;
+    elements.nextQuestionBtn.textContent = t.nextQuestion;
+    elements.backToMenuBtn.textContent = t.backToMenu;
+    elements.endTitle.textContent = t.quizComplete;
+    elements.playAgainBtn.textContent = t.playAgain;
+    elements.mainMenuBtn.textContent = t.mainMenu;
+}
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const areaParam = urlParams.get('area');
-        if (areaParam) {
-            startGame(areaParam);
-        }
+const setLanguage = (lang) => {
+    currentLanguage = lang;
+    updateUIText();
+    showScreen('domain');
+};
+
+const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+};
+
+const startGame = (area) => {
+    currentQuestions = shuffleArray(allQuestions.filter(q => q.area === area));
+    currentQuestionIndex = 0;
+    score = 0;
+    elements.scoreDisplay.textContent = `Score: 0`;
+    showScreen('game');
+    displayQuestion();
+};
+
+const displayQuestion = () => {
+    if (currentQuestionIndex >= currentQuestions.length) {
+        showEndScreen();
+        return;
     }
 
-    function toggleMobileMenu() {
-        document.body.classList.toggle('mobile-menu-open');
-        mobileSidebarOverlay.classList.toggle('hidden');
-        mobileSidebar.classList.toggle('-translate-x-full');
+    questionsAnswered = false;
+    const question = currentQuestions[currentQuestionIndex];
+
+    elements.card.classList.remove('flipped');
+    elements.nextQuestionBtn.classList.add('hidden');
+
+    elements.questionText.textContent = parseText(question.pregunta);
+    elements.explanationText.textContent = parseText(question.explicacion);
+    elements.questionCounter.textContent = `Q ${currentQuestionIndex + 1}/${currentQuestions.length}`;
+    elements.scoreDisplay.textContent = `Score: ${score}`;
+    elements.progressBar.style.width = `${((currentQuestionIndex + 1) / currentQuestions.length) * 100}%`;
+
+    elements.optionsContainer.innerHTML = '';
+    const options = shuffleArray([...question.opciones]);
+    options.forEach(option => {
+        const button = document.createElement('button');
+        button.className = 'option-btn';
+        button.innerHTML = `<span class="font-semibold">${parseText(option)}</span>`;
+        button.onclick = () => selectAnswer(button, option, question.respuesta_correcta);
+        elements.optionsContainer.appendChild(button);
+    });
+};
+
+const selectAnswer = (selectedButton, selectedOptionText, correctOptionText) => {
+    if (questionsAnswered) return;
+    questionsAnswered = true;
+
+    const isCorrect = parseText(selectedOptionText) === parseText(correctOptionText);
+
+    if (isCorrect) {
+        score++;
+        playSound('C4', '8n');
+        selectedButton.classList.add('correct');
+    } else {
+        playSound('A3', '8n');
+        selectedButton.classList.add('incorrect');
     }
+    elements.scoreDisplay.textContent = `Score: ${score}`;
 
-    function startGame(area) {
-        currentArea = area;
-        currentFlashcards = allFlashcards.filter(card => card.area.toString() === area);
-        const areaName = uiText[currentLanguage][`area_${area}`];
-        
-        if (currentFlashcards.length === 0) {
-            welcomeMessage.innerHTML = `<div class="text-center">
-                <h2 class="text-2xl font-bold mb-2">${uiText[currentLanguage].proximamente_title}</h2>
-                <p class="text-gray-600">${uiText[currentLanguage].proximamente_subtitle.replace('{area}', areaName)}</p>
-            </div>`;
-            welcomeMessage.classList.remove('hidden');
-            gameContainer.classList.add('hidden');
-            resultsScreen.classList.add('hidden');
-            updateMenuHighlight();
-            return;
-        }
-        
-        currentFlashcards.sort(() => Math.random() - 0.5);
-
-        currentIndex = 0;
-        score = 0;
-
-        welcomeMessage.classList.add('hidden');
-        resultsScreen.classList.add('hidden');
-        gameContainer.classList.remove('hidden');
-        nextButton.classList.add('hidden');
-
-        updateScore();
-        displayCard();
-        updateMenuHighlight();
-    }
-    
-    function displayCard() {
-        cardInner.classList.remove('flipped');
-        
-        setTimeout(() => {
-            const card = currentFlashcards[currentIndex];
-            questionText.textContent = card.pregunta;
-            cardCounter.textContent = `${currentIndex + 1} / ${currentFlashcards.length}`;
-            
-            const areaName = uiText[currentLanguage][`area_${currentArea}`];
-            areaTitle.textContent = areaName;
-            mobileAreaTitle.textContent = areaName;
-            
-            optionsContainer.innerHTML = '';
-            card.opciones.forEach(opcion => {
-                const button = document.createElement('button');
-                button.className = 'option-btn';
-                button.textContent = opcion;
-                button.onclick = () => handleOptionClick(opcion, card.respuesta_correcta, button);
-                optionsContainer.appendChild(button);
-            });
-
-            explanationText.textContent = card.explicacion;
-            correctAnswerText.textContent = card.respuesta_correcta;
-            updateProgressBar();
-        }, 300);
-    }
-
-    function handleOptionClick(selectedOption, correctAnswer, button) {
-        const isCorrect = selectedOption === correctAnswer;
-        
-        if (isCorrect) {
-            score += 10;
+    Array.from(elements.optionsContainer.children).forEach(button => {
+        button.disabled = true;
+        const buttonText = button.querySelector('span').textContent;
+        if (buttonText === parseText(correctOptionText) && !isCorrect) {
             button.classList.add('correct');
-            feedbackHeader.innerHTML = `<h2 class="text-2xl font-bold text-green-600">${uiText[currentLanguage].feedback_correcto}</h2>`;
-        } else {
-            button.classList.add('incorrect');
-            feedbackHeader.innerHTML = `<h2 class="text-2xl font-bold text-red-600">${uiText[currentLanguage].feedback_incorrecto}</h2>`;
         }
+    });
 
-        updateScore();
-        
-        Array.from(optionsContainer.children).forEach(btn => {
-            btn.disabled = true;
-            if (!isCorrect && btn.textContent === correctAnswer) {
-                btn.classList.add('correct');
-            }
-        });
-        
-        cardInner.classList.add('flipped');
-        nextButton.classList.remove('hidden');
-    }
+    setTimeout(() => {
+        elements.card.classList.add('flipped');
+        elements.nextQuestionBtn.classList.remove('hidden');
+    }, 500);
+};
 
-    function showNextCard() {
-        currentIndex++;
-        if (currentIndex < currentFlashcards.length) {
-            nextButton.classList.add('hidden');
-            displayCard();
-        } else {
-            showResults();
-        }
-    }
+const showEndScreen = () => {
+    showScreen('end');
+    const percentage = currentQuestions.length > 0 ? ((score / currentQuestions.length) * 100).toFixed(0) : 0;
+    const t = translations[currentLanguage];
+    elements.finalScore.textContent = `${t.finalScore} ${score}/${currentQuestions.length}`;
+    elements.finalPercentage.textContent = `${percentage}%`;
+};
 
-    function showResults() {
-        gameContainer.classList.add('hidden');
-        resultsScreen.classList.remove('hidden');
-        finalScore.textContent = score;
-    }
-
-    function updateScore() {
-        scoreEl.textContent = score;
-    }
-
-    function updateProgressBar() {
-        const progress = ((currentIndex + 1) / currentFlashcards.length) * 100;
-        progressBar.style.width = `${progress}%`;
-    }
+// --- Event Listeners ---
+const initialize = () => {
+    elements.langEnBtn.onclick = () => {
+        playSound('C4', '8n');
+        setLanguage('en');
+    };
+    elements.langEsBtn.onclick = () => {
+        playSound('C4', '8n');
+        setLanguage('es');
+    };
+    elements.backToLangBtn.onclick = () => showScreen('language');
     
-    function updateMenuHighlight() {
-        document.querySelectorAll('.menu-link').forEach(link => {
-            link.classList.remove('active');
-            if (link.dataset.area === currentArea) {
-                link.classList.add('active');
-            }
-        });
-    }
+    document.querySelectorAll('.domain-btn').forEach(button => {
+        button.onclick = () => startGame(parseInt(button.dataset.area));
+    });
 
-    initialize();
-});
+    elements.nextQuestionBtn.onclick = () => {
+        currentQuestionIndex++;
+        displayQuestion();
+    };
 
+    elements.backToMenuBtn.onclick = () => showScreen('domain');
+    elements.playAgainBtn.onclick = () => startGame(currentQuestions[0].area);
+    elements.mainMenuBtn.onclick = () => showScreen('domain');
+};
+
+// Initialize the app once the DOM is loaded
+document.addEventListener('DOMContentLoaded', initialize);
