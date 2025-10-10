@@ -4,99 +4,119 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AWS DOP-C02 Flashcards</title>
-    <!-- Tailwind for layout and Poppins font -->
+    <!-- Tailwind CSS y Poppins Font -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family-Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Custom Stylesheet from user -->
+    <!-- Hoja de Estilos Personalizada -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-100">
 
-    <div id="app-container" class="w-full max-w-4xl mx-auto p-4 md:p-8">
-
-        <!-- Language Selection Screen -->
-        <div id="language-screen" class="text-center bg-white p-8 rounded-3xl shadow-lg">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">AWS DOP-C02</h1>
-            <h2 class="text-xl md:text-2xl text-gray-600 mt-2">Flashcards</h2>
-            <div class="pt-8">
-                <p class="mb-4 text-lg text-gray-700">Select Language / Selecciona Idioma</p>
-                <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <button id="lang-en" class="action-btn">ENGLISH</button>
-                    <button id="lang-es" class="action-btn">ESPAÑOL</button>
-                </div>
+    <div class="flex h-screen">
+        <!-- Barra Lateral (Sidebar) -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md flex-shrink-0 hidden md:flex md:flex-col">
+            <div class="p-6 border-b">
+                <h1 class="text-xl font-bold text-gray-800">AWS DOP-C02</h1>
+                <p class="text-sm text-gray-500">Flashcards</p>
             </div>
-        </div>
-        
-        <!-- Domain Selection Screen -->
-        <div id="domain-screen" class="hidden text-center bg-white p-8 rounded-3xl shadow-lg">
-            <h1 id="domain-title" class="text-2xl md:text-3xl font-bold text-gray-800 mb-8"></h1>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <button data-area="1" class="option-btn text-center">1. SDLC Automation</button>
-                <button data-area="2" class="option-btn text-center">2. Config Mgmt & IaC</button>
-                <button data-area="3" class="option-btn text-center">3. Resilient Cloud</button>
-                <button data-area="4" class="option-btn text-center">4. Monitoring & Logging</button>
-                <button data-area="5" class="option-btn text-center">5. Incident Response</button>
-                <button data-area="6" class="option-btn text-center">6. Security & Compliance</button>
+            <nav id="domain-menu" class="flex-1 p-4 space-y-2">
+                <!-- Los enlaces de dominio se generan con JS -->
+            </nav>
+            <div class="p-4 border-t">
+                 <p class="text-xs text-gray-500">Idioma:</p>
+                 <div class="flex items-center justify-around mt-2">
+                     <button id="lang-en-btn" class="text-sm font-semibold text-gray-700 p-1 rounded-md" data-lang="en">EN</button>
+                     <button id="lang-es-btn" class="text-sm font-semibold text-gray-700 p-1 rounded-md" data-lang="es">ES</button>
+                 </div>
             </div>
-            <button id="back-to-lang" class="mt-8 text-blue-600 hover:underline"></button>
-        </div>
+        </aside>
 
-        <!-- Game Screen -->
-        <div id="game-screen" class="hidden">
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl shadow">
-                <div class="w-full sm:w-auto flex items-center mb-3 sm:mb-0">
-                     <button id="back-to-menu" class="text-sm text-gray-600 hover:text-blue-600 mr-4"></button>
-                     <div id="question-counter" class="font-bold text-lg whitespace-nowrap text-gray-700">Q 1/10</div>
-                </div>
-                <div class="w-full sm:w-1/2 bg-gray-200 rounded-full h-2.5">
-                    <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
-                </div>
-                 <div id="score" class="font-bold text-lg whitespace-nowrap text-gray-700 mt-3 sm:mt-0 sm:ml-4">Score: 0</div>
-            </div>
+        <!-- Contenido Principal -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="md:hidden flex justify-between items-center p-4 bg-white shadow-md">
+                 <h1 class="text-xl font-bold text-gray-800">AWS Flashcards</h1>
+                 <button id="mobile-menu-btn">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                 </button>
+            </header>
 
-            <!-- Flashcard -->
-            <div class="perspective">
-                <div id="card" class="card">
-                    <div id="card-front" class="card-face justify-center">
-                        <p id="question-text" class="text-xl md:text-2xl font-semibold text-center text-gray-800"></p>
-                    </div>
-                    <div id="card-back" class="card-back justify-center">
-                         <h3 id="explanation-title" class="text-xl font-bold text-blue-600 mb-3"></h3>
-                         <p id="explanation-text" class="text-gray-700"></p>
+            <main id="main-content" class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-8">
+                <!-- Pantalla de Bienvenida -->
+                <div id="welcome-screen" class="text-center h-full flex flex-col justify-center items-center">
+                    <div class="bg-white p-8 rounded-3xl shadow-lg max-w-lg">
+                        <h2 id="welcome-title" class="text-3xl font-bold text-gray-800"></h2>
+                        <p id="welcome-text" class="mt-4 text-gray-600"></p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Options -->
-            <div id="options-container" class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4">
-            </div>
+                <!-- Pantalla de Juego -->
+                <div id="game-screen" class="hidden">
+                     <!-- Header -->
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl shadow">
+                        <div id="question-counter" class="font-bold text-lg whitespace-nowrap text-gray-700 mb-3 sm:mb-0"></div>
+                        <div class="w-full sm:w-1/2 bg-gray-200 rounded-full h-2.5">
+                            <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                         <div id="score" class="font-bold text-lg whitespace-nowrap text-gray-700 mt-3 sm:mt-0"></div>
+                    </div>
 
-            <!-- Controls -->
-            <div id="controls-container" class="mt-2">
-                 <button id="next-question" class="action-btn hidden"></button>
-            </div>
-        </div>
-        
-        <!-- End Screen -->
-        <div id="end-screen" class="hidden text-center bg-white p-8 rounded-3xl shadow-lg">
-             <h1 id="end-title" class="text-3xl font-bold text-gray-800"></h1>
-             <p id="final-score-text" class="text-2xl mt-4 text-gray-700"></p>
-             <p id="final-percentage-text" class="text-5xl font-bold mt-2 text-blue-600"></p>
-             <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8">
-                 <button id="play-again" class="action-btn"></button>
-                 <button id="main-menu" class="option-btn text-center font-semibold"></button>
-            </div>
+                    <!-- Flashcard -->
+                    <div class="perspective">
+                        <div id="card" class="card">
+                            <div id="card-front" class="card-face justify-center">
+                                <p id="question-text" class="text-xl md:text-2xl font-semibold text-center text-gray-800"></p>
+                            </div>
+                            <div id="card-back" class="card-back justify-center">
+                                 <h3 id="explanation-title" class="text-xl font-bold text-blue-600 mb-3"></h3>
+                                 <p id="explanation-text" class="text-gray-700"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opciones -->
+                    <div id="options-container" class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+                    <div id="controls-container" class="mt-2">
+                         <button id="next-question" class="action-btn hidden"></button>
+                    </div>
+                </div>
+
+                <!-- Pantalla Final -->
+                <div id="end-screen" class="hidden text-center bg-white p-8 rounded-3xl shadow-lg">
+                    <h1 id="end-title" class="text-3xl font-bold text-gray-800"></h1>
+                    <p id="final-score-text" class="text-2xl mt-4 text-gray-700"></p>
+                    <p id="final-percentage-text" class="text-5xl font-bold mt-2 text-blue-600"></p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+                        <button id="play-again" class="action-btn"></button>
+                        <button id="main-menu" class="option-btn text-center font-semibold"></button>
+                   </div>
+                </div>
+            </main>
         </div>
     </div>
-
-    <!-- Main application logic -->
-    <script type="module" src="script.js"></script>
     
-    <!-- Tone.js for sound effects -->
+    <!-- Capa para menú móvil -->
+    <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden"></div>
+    <!-- Menú móvil (copia de la barra lateral) -->
+    <div id="mobile-sidebar" class="fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-40 transform -translate-x-full md:hidden">
+        <!-- Contenido se copiará aquí desde la barra lateral principal -->
+    </div>
+
+
+    <!-- Scripts de Preguntas -->
+    <script src="area_1.js"></script>
+    <script src="area_2.js"></script>
+    <script src="area_3.js"></script>
+    <script src="area_4.js"></script>
+    <script src="area_5.js"></script>
+    <script src="area_6.js"></script>
+    
+    <!-- Lógica Principal -->
+    <script src="script.js" defer></script>
+    
+    <!-- Tone.js para efectos de sonido -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
 </body>
 </html>

@@ -1,33 +1,45 @@
-// --- Import Question Data ---
-import { area1Questions } from './area_1.js';
-import { area2Questions } from './area_2.js';
-import { area3Questions } from './area_3.js';
-import { area4Questions } from './area_4.js';
-import { area5Questions } from './area_5.js';
-import { area6Questions } from './area_6.js';
-
-const allQuestions = [
-    ...area1Questions,
-    ...area2Questions,
-    ...area3Questions,
-    ...area4Questions,
-    ...area5Questions,
-    ...area6Questions,
-];
-
 // --- State Variables ---
 let currentLanguage = 'en';
 let currentQuestions = [];
 let currentQuestionIndex = 0;
 let score = 0;
 let questionsAnswered = false;
+let currentArea = 0;
+
+// Combine all questions from global scope
+const allQuestions = [
+    ...(typeof area1Questions !== 'undefined' ? area1Questions : []),
+    ...(typeof area2Questions !== 'undefined' ? area2Questions : []),
+    ...(typeof area3Questions !== 'undefined' ? area3Questions : []),
+    ...(typeof area4Questions !== 'undefined' ? area4Questions : []),
+    ...(typeof area5Questions !== 'undefined' ? area5Questions : []),
+    ...(typeof area6Questions !== 'undefined' ? area6Questions : []),
+];
+
+const domainInfo = {
+    en: [
+        {id: 1, name: "SDLC Automation"},
+        {id: 2, name: "Config Mgmt & IaC"},
+        {id: 3, name: "Resilient Cloud Solutions"},
+        {id: 4, name: "Monitoring & Logging"},
+        {id: 5, name: "Incident Response"},
+        {id: 6, name: "Security & Compliance"}
+    ],
+    es: [
+        {id: 1, name: "Automatización del SDLC"},
+        {id: 2, name: "Gestión de Config. e IaC"},
+        {id: 3, name: "Soluciones de Nube Resilientes"},
+        {id: 4, name: "Monitoreo y Registros"},
+        {id: 5, name: "Respuesta a Incidentes"},
+        {id: 6, name: "Seguridad y Cumplimiento"}
+    ]
+};
 
 // --- Sound Effects ---
 let synth;
 const playSound = (note, duration) => {
-    // Initialize Tone.js on the first user interaction
+    if (typeof Tone === 'undefined') return;
     if (!synth) {
-        if (typeof Tone === 'undefined') return;
         synth = new Tone.Synth().toDestination();
     }
     if (Tone.context.state !== 'running') {
@@ -38,18 +50,21 @@ const playSound = (note, duration) => {
 
 // --- UI Elements ---
 const screens = {
-    language: document.getElementById('language-screen'),
-    domain: document.getElementById('domain-screen'),
+    welcome: document.getElementById('welcome-screen'),
     game: document.getElementById('game-screen'),
     end: document.getElementById('end-screen'),
 };
 
 const elements = {
-    // Language/Domain
-    langEnBtn: document.getElementById('lang-en'),
-    langEsBtn: document.getElementById('lang-es'),
-    domainTitle: document.getElementById('domain-title'),
-    backToLangBtn: document.getElementById('back-to-lang'),
+    domainMenu: document.getElementById('domain-menu'),
+    langEnBtn: document.getElementById('lang-en-btn'),
+    langEsBtn: document.getElementById('lang-es-btn'),
+    mainContent: document.getElementById('main-content'),
+    
+    // Welcome
+    welcomeTitle: document.getElementById('welcome-title'),
+    welcomeText: document.getElementById('welcome-text'),
+
     // Game
     questionCounter: document.getElementById('question-counter'),
     scoreDisplay: document.getElementById('score'),
@@ -60,70 +75,116 @@ const elements = {
     explanationText: document.getElementById('explanation-text'),
     optionsContainer: document.getElementById('options-container'),
     nextQuestionBtn: document.getElementById('next-question'),
-    backToMenuBtn: document.getElementById('back-to-menu'),
+    
     // End
     endTitle: document.getElementById('end-title'),
     finalScore: document.getElementById('final-score-text'),
     finalPercentage: document.getElementById('final-percentage-text'),
     playAgainBtn: document.getElementById('play-again'),
     mainMenuBtn: document.getElementById('main-menu'),
+
+    // Mobile Menu
+    mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+    mobileSidebar: document.getElementById('mobile-sidebar'),
+    mobileSidebarOverlay: document.getElementById('mobile-sidebar-overlay'),
+    sidebar: document.getElementById('sidebar'),
 };
 
 const translations = {
     en: {
-        selectDomain: "Select Domain",
-        back: "Back",
+        welcomeTitle: "Welcome!",
+        welcomeText: "Select a domain from the sidebar to start practicing for your AWS DOP-C02 certification.",
         explanation: "Explanation",
         nextQuestion: "Next Question",
-        backToMenu: "Menu",
         quizComplete: "Quiz Complete!",
         finalScore: "Final Score:",
-        finalPercentage: "Accuracy:",
-        playAgain: "Play Again",
-        mainMenu: "Main Menu",
+        playAgain: "Play This Domain Again",
+        mainMenu: "Back to Main Menu",
     },
     es: {
-        selectDomain: "Selecciona Dominio",
-        back: "Volver",
+        welcomeTitle: "¡Bienvenido!",
+        welcomeText: "Selecciona un dominio de la barra lateral para comenzar a practicar para tu certificación AWS DOP-C02.",
         explanation: "Explicación",
         nextQuestion: "Siguiente Pregunta",
-        backToMenu: "Menú",
         quizComplete: "¡Prueba Completa!",
         finalScore: "Puntaje Final:",
-        finalPercentage: "Precisión:",
-        playAgain: "Jugar de Nuevo",
-        mainMenu: "Menú Principal",
+        playAgain: "Jugar este Dominio de Nuevo",
+        mainMenu: "Volver al Menú Principal",
     }
 };
 
 // --- Functions ---
-const showScreen = (screenName) => {
+const showMainContent = (screenName) => {
     Object.values(screens).forEach(screen => screen.classList.add('hidden'));
-    screens[screenName].classList.remove('hidden');
+    if (screens[screenName]) {
+        screens[screenName].classList.remove('hidden');
+    }
 };
 
 const parseText = (text) => {
     if (!text || !text.includes('/')) return text;
     const parts = text.split('/').map(p => p.trim());
-    return currentLanguage === 'es' ? parts[1] : parts[0];
+    return currentLanguage === 'es' ? (parts[1] || parts[0]) : parts[0];
 };
 
 const updateUIText = () => {
     const t = translations[currentLanguage];
-    elements.domainTitle.textContent = t.selectDomain;
-    elements.backToLangBtn.textContent = t.back;
+    elements.welcomeTitle.textContent = t.welcomeTitle;
+    elements.welcomeText.textContent = t.welcomeText;
     elements.explanationTitle.textContent = t.explanation;
     elements.nextQuestionBtn.textContent = t.nextQuestion;
-    elements.backToMenuBtn.textContent = t.backToMenu;
     elements.endTitle.textContent = t.quizComplete;
     elements.playAgainBtn.textContent = t.playAgain;
     elements.mainMenuBtn.textContent = t.mainMenu;
-}
+    buildDomainMenu();
+};
 
 const setLanguage = (lang) => {
+    if (currentLanguage === lang) return;
     currentLanguage = lang;
     updateUIText();
-    showScreen('domain');
+    // Update active language button style
+    document.querySelectorAll('[data-lang]').forEach(btn => {
+        btn.classList.toggle('bg-blue-500', btn.dataset.lang === lang);
+        btn.classList.toggle('text-white', btn.dataset.lang === lang);
+    });
+};
+
+const buildDomainMenu = () => {
+    const domains = domainInfo[currentLanguage];
+    elements.domainMenu.innerHTML = '';
+    domains.forEach(domain => {
+        const link = document.createElement('a');
+        link.href = '#';
+        link.className = 'menu-link';
+        link.dataset.area = domain.id;
+        link.textContent = domain.name;
+        link.onclick = (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            startGame(domain.id);
+            closeMobileMenu();
+        };
+        elements.domainMenu.appendChild(link);
+    });
+    // Clone for mobile menu
+    elements.mobileSidebar.innerHTML = elements.sidebar.innerHTML;
+    // Re-attach listeners for cloned mobile elements
+    elements.mobileSidebar.querySelectorAll('.menu-link').forEach(link => {
+        link.onclick = (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+            // Highlight both desktop and mobile links
+            document.querySelector(`.menu-link[data-area='${link.dataset.area}']`).classList.add('active');
+            link.classList.add('active');
+            startGame(parseInt(link.dataset.area));
+            closeMobileMenu();
+        };
+    });
+    elements.mobileSidebar.querySelectorAll('[data-lang]').forEach(btn => {
+        btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+    });
 };
 
 const shuffleArray = (array) => {
@@ -135,11 +196,12 @@ const shuffleArray = (array) => {
 };
 
 const startGame = (area) => {
-    currentQuestions = shuffleArray(allQuestions.filter(q => q.area === area));
+    currentArea = area;
+    currentQuestions = shuffleArray([...allQuestions.filter(q => q.area === area)]);
     currentQuestionIndex = 0;
     score = 0;
     elements.scoreDisplay.textContent = `Score: 0`;
-    showScreen('game');
+    showMainContent('game');
     displayQuestion();
 };
 
@@ -180,7 +242,7 @@ const selectAnswer = (selectedButton, selectedOptionText, correctOptionText) => 
 
     if (isCorrect) {
         score++;
-        playSound('C4', '8n');
+        playSound('C5', '8n');
         selectedButton.classList.add('correct');
     } else {
         playSound('A3', '8n');
@@ -199,42 +261,49 @@ const selectAnswer = (selectedButton, selectedOptionText, correctOptionText) => 
     setTimeout(() => {
         elements.card.classList.add('flipped');
         elements.nextQuestionBtn.classList.remove('hidden');
-    }, 500);
+    }, 800);
 };
 
 const showEndScreen = () => {
-    showScreen('end');
+    showMainContent('end');
     const percentage = currentQuestions.length > 0 ? ((score / currentQuestions.length) * 100).toFixed(0) : 0;
     const t = translations[currentLanguage];
     elements.finalScore.textContent = `${t.finalScore} ${score}/${currentQuestions.length}`;
     elements.finalPercentage.textContent = `${percentage}%`;
 };
 
+const openMobileMenu = () => {
+    elements.mobileSidebarOverlay.classList.remove('hidden');
+    elements.mobileSidebar.classList.remove('-translate-x-full');
+    document.body.classList.add('mobile-menu-open');
+}
+const closeMobileMenu = () => {
+    elements.mobileSidebarOverlay.classList.add('hidden');
+    elements.mobileSidebar.classList.add('-translate-x-full');
+    document.body.classList.remove('mobile-menu-open');
+}
+
 // --- Event Listeners ---
 const initialize = () => {
-    elements.langEnBtn.onclick = () => {
-        playSound('C4', '8n');
-        setLanguage('en');
-    };
-    elements.langEsBtn.onclick = () => {
-        playSound('C4', '8n');
-        setLanguage('es');
-    };
-    elements.backToLangBtn.onclick = () => showScreen('language');
-    
-    document.querySelectorAll('.domain-btn').forEach(button => {
-        button.onclick = () => startGame(parseInt(button.dataset.area));
-    });
+    setLanguage('en'); // Set default language
+    showMainContent('welcome');
+
+    elements.langEnBtn.addEventListener('click', () => setLanguage('en'));
+    elements.langEsBtn.addEventListener('click', () => setLanguage('es'));
 
     elements.nextQuestionBtn.onclick = () => {
         currentQuestionIndex++;
         displayQuestion();
     };
 
-    elements.backToMenuBtn.onclick = () => showScreen('domain');
-    elements.playAgainBtn.onclick = () => startGame(currentQuestions[0].area);
-    elements.mainMenuBtn.onclick = () => showScreen('domain');
+    elements.playAgainBtn.onclick = () => startGame(currentArea);
+    elements.mainMenuBtn.onclick = () => showMainContent('welcome');
+    
+    // Mobile Menu listeners
+    elements.mobileMenuBtn.addEventListener('click', openMobileMenu);
+    elements.mobileSidebarOverlay.addEventListener('click', closeMobileMenu);
 };
 
 // Initialize the app once the DOM is loaded
 document.addEventListener('DOMContentLoaded', initialize);
+
