@@ -33,10 +33,14 @@ const playSound = (note, duration) => {
     if (!synth) {
         synth = new Tone.Synth().toDestination();
     }
-    if (Tone.context.state !== 'running') {
-        Tone.context.resume();
+    try {
+        if (Tone.context.state !== 'running') {
+            Tone.context.resume();
+        }
+        synth.triggerAttackRelease(note, duration);
+    } catch (e) {
+        console.error("Audio context error:", e);
     }
-    synth.triggerAttackRelease(note, duration);
 }
 
 // --- UI Elements ---
@@ -110,17 +114,14 @@ const translations = {
 
 /**
  * Fetches and loads all questions from the JSON file.
- * This is an asynchronous operation.
  */
 const loadAllQuestions = async () => {
     try {
-        // We assume questions.json is in the same directory as the HTML file.
         const response = await fetch('./questions.json');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const questionsByArea = await response.json();
-        // Flatten the object of arrays into a single array of questions
         allQuestions = Object.values(questionsByArea).flat();
     } catch (error) {
         console.error("Could not load questions:", error);
@@ -160,46 +161,55 @@ const setLanguage = (lang) => {
     updateUIText();
     // Update active language button style
     document.querySelectorAll('[data-lang]').forEach(btn => {
-        btn.classList.toggle('bg-blue-500', btn.dataset.lang === lang);
+        btn.classList.toggle('bg-blue-600', btn.dataset.lang === lang);
         btn.classList.toggle('text-white', btn.dataset.lang === lang);
+        btn.classList.toggle('bg-white', btn.dataset.lang !== lang);
+        btn.classList.toggle('text-gray-700', btn.dataset.lang !== lang);
     });
 };
 
 const buildDomainMenu = () => {
     const domains = domainInfo[currentLanguage];
-    elements.domainMenu.innerHTML = '';
+    elements.domainMenu.innerHTML = ''; // Clear main menu
+    
     domains.forEach(domain => {
         const link = document.createElement('a');
         link.href = '#';
         link.className = 'menu-link';
         link.dataset.area = domain.id;
         link.textContent = domain.name;
-        link.onclick = (e) => {
+        
+        const clickHandler = (e) => {
             e.preventDefault();
             document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
+             // Add active class to all matching links (desktop and mobile)
+            document.querySelectorAll(`.menu-link[data-area='${domain.id}']`).forEach(l => l.classList.add('active'));
             startGame(domain.id);
             closeMobileMenu();
         };
+
+        link.onclick = clickHandler;
         elements.domainMenu.appendChild(link);
     });
-    // Clone for mobile menu
-    elements.mobileSidebar.innerHTML = elements.sidebar.innerHTML;
-    // Re-attach listeners for cloned mobile elements
-    elements.mobileSidebar.querySelectorAll('.menu-link').forEach(link => {
-        link.onclick = (e) => {
-            e.preventDefault();
-            document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
-            // Highlight both desktop and mobile links
-            document.querySelector(`.menu-link[data-area='${link.dataset.area}']`).classList.add('active');
-            link.classList.add('active');
-            startGame(parseInt(link.dataset.area));
-            closeMobileMenu();
-        };
-    });
-    elements.mobileSidebar.querySelectorAll('[data-lang]').forEach(btn => {
-        btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
-    });
+
+    // Clone the entire sidebar content for the mobile menu for simplicity
+    if(elements.sidebar) {
+        elements.mobileSidebar.innerHTML = elements.sidebar.innerHTML;
+        
+        // Re-attach listeners for cloned mobile elements
+        elements.mobileSidebar.querySelectorAll('.menu-link').forEach(link => {
+            link.onclick = (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll(`.menu-link[data-area='${link.dataset.area}']`).forEach(l => l.classList.add('active'));
+                startGame(parseInt(link.dataset.area));
+                closeMobileMenu();
+            };
+        });
+        elements.mobileSidebar.querySelectorAll('[data-lang]').forEach(btn => {
+            btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+        });
+    }
 };
 
 const shuffleArray = (array) => {
@@ -236,14 +246,14 @@ const displayQuestion = () => {
     elements.explanationText.textContent = parseText(question.explicacion);
     elements.questionCounter.textContent = `Q ${currentQuestionIndex + 1}/${currentQuestions.length}`;
     elements.scoreDisplay.textContent = `Score: ${score}`;
-    elements.progressBar.style.width = `${((currentQuestionIndex + 1) / currentQuestions.length) * 100}%`;
+    elements.progressBar.style.width = `${((currentQuestionIndex) / currentQuestions.length) * 100}%`;
 
     elements.optionsContainer.innerHTML = '';
     const options = shuffleArray([...question.opciones]);
     options.forEach(option => {
         const button = document.createElement('button');
         button.className = 'option-btn';
-        button.innerHTML = `<span class="font-semibold">${parseText(option)}</span>`;
+        button.innerHTML = `<span>${parseText(option)}</span>`;
         button.onclick = () => selectAnswer(button, option, question.respuesta_correcta);
         elements.optionsContainer.appendChild(button);
     });
@@ -263,6 +273,9 @@ const selectAnswer = (selectedButton, selectedOptionText, correctOptionText) => 
         playSound('A3', '8n');
         selectedButton.classList.add('incorrect');
     }
+    
+    // Update progress bar after answering
+    elements.progressBar.style.width = `${((currentQuestionIndex + 1) / currentQuestions.length) * 100}%`;
     elements.scoreDisplay.textContent = `Score: ${score}`;
 
     Array.from(elements.optionsContainer.children).forEach(button => {
@@ -276,7 +289,7 @@ const selectAnswer = (selectedButton, selectedOptionText, correctOptionText) => 
     setTimeout(() => {
         elements.card.classList.add('flipped');
         elements.nextQuestionBtn.classList.remove('hidden');
-    }, 800);
+    }, 1200);
 };
 
 const showEndScreen = () => {
@@ -300,25 +313,27 @@ const closeMobileMenu = () => {
 
 // --- Event Listeners ---
 const initialize = async () => {
-    // Show a loading message while we fetch the questions
-    setLanguage('en'); 
     showMainContent('welcome');
+    setLanguage('en'); 
     
     await loadAllQuestions(); // Asynchronously load the questions
     
-    // Once questions are loaded, update the UI and enable interactions
     updateUIText();
 
     elements.langEnBtn.addEventListener('click', () => setLanguage('en'));
     elements.langEsBtn.addEventListener('click', () => setLanguage('es'));
-
+    
     elements.nextQuestionBtn.onclick = () => {
         currentQuestionIndex++;
         displayQuestion();
     };
 
     elements.playAgainBtn.onclick = () => startGame(currentArea);
-    elements.mainMenuBtn.onclick = () => showMainContent('welcome');
+    elements.mainMenuBtn.onclick = () => {
+        showMainContent('welcome');
+        // Deselect active menu item
+        document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+    };
     
     // Mobile Menu listeners
     elements.mobileMenuBtn.addEventListener('click', openMobileMenu);
